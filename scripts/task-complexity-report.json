@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-31T11:31:56.884Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 10,
+    "analysisCount": 1,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 2,
+      "taskTitle": "Implement User Authentication System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the User Authentication System implementation into subtasks covering Supabase Auth configuration, frontend auth pages and components, backend JWT validation, user profile management, and testing strategy.",
+      "reasoning": "This task involves multiple complex components including OAuth integration, JWT handling, state management, and database interactions across both frontend and backend. It requires careful security considerations and extensive testing, justifying a high complexity score and multiple subtasks."
+    }
+  ]
+}
