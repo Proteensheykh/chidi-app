@@ -1,0 +1,1558 @@
+# CHIDI Application - Product Requirements Document
+
+**Document Version:** 1.0
+**Date:** October 26, 2023
+**Project Name:** CHIDI Application (MVP)
+
+---
+
+## 1. Executive Summary
+
+This Product Requirements Document (PRD) outlines the Minimum Viable Product (MVP) features for the CHIDI Application. CHIDI aims to be an AI-powered business assistant designed to help small businesses manage customer communications, inventory, and business context more efficiently. This MVP focuses on delivering core functionalities: secure user authentication, an intelligent workspace for onboarding and business context capture, product and inventory management, an AI-driven smart auto-responder for social media conversations, and essential monitoring and alerting capabilities. The goal of this MVP is to validate the core value proposition, onboard initial users, test the effectiveness of AI integrations, and establish a robust and scalable technical foundation for future development.
+
+---
+
+## 2. Background
+
+Small and medium-sized businesses (SMBs) often face challenges in managing diverse aspects of their operations, including timely customer communication across multiple social media platforms, efficient inventory tracking, and maintaining a consistent understanding of their own business context for effective decision-making and customer interaction. The CHIDI application, as conceptualized in the `CHIDI_OVERVIEW.md` document, seeks to address these pain points by providing an integrated, AI-enhanced platform.
+
+This PRD details the first iteration of CHIDI, focusing on an MVP that provides immediate value by:
+*   Simplifying user access and security.
+*   Streamlining the capture of essential business information through a novel conversational interface.
+*   Offering tools for basic product and inventory management.
+*   Automating responses to common customer inquiries on social media.
+*   Ensuring system stability and providing insights through monitoring.
+
+These foundational features are critical for testing core hypotheses about user needs and the viability of an AI-assisted approach to business management for SMBs.
+
+---
+
+## 3. Objectives
+
+The MVP defined in this document aims to achieve the following objectives:
+
+*   **Validate Core User Authentication:** Implement a secure and user-friendly authentication system using Supabase Auth, supporting both email/password and Google OAuth.
+*   **Establish Conversational Onboarding:** Develop an AI-driven conversational workspace to effectively capture business context and onboard users smoothly.
+*   **Enable Basic Product Management:** Allow users to manage their products, variants, and stock levels, forming the knowledge base for AI interactions.
+*   **Test AI-Powered Conversation Handling:** Implement a smart auto-responder for Instagram and WhatsApp to handle common customer queries, with clear escalation paths.
+*   **Ensure System Reliability:** Integrate foundational monitoring and alerting to track system health, errors, and AI performance.
+*   **Gather User Feedback:** Onboard an initial cohort of users to gather feedback on usability, feature utility, and overall product direction.
+*   **Build a Scalable Foundation:** Implement a technical architecture (FastAPI monolith, Next.js frontend, Supabase for DB/Auth/Vector, Celery for async tasks) that can support future growth and feature expansion.
+
+---
+
+## 4. Stakeholders
+
+*   **Product Team:** (e.g., Product Manager, Product Owner) - Responsible for defining product vision, strategy, and requirements.
+*   **Engineering Team:** (e.g., Lead Engineer, Backend Developers, Frontend Developers, QA Engineers) - Responsible for design, development, testing, and deployment.
+*   **Design Team:** (e.g., UX/UI Designers) - Responsible for user experience and interface design.
+*   **Early Adopters/Beta Testers:** Users who will provide initial feedback on the MVP.
+*   **Business Leadership/Investors:** Interested in the overall success and strategic direction of the project.
+
+---
+
+## 5. Proposed File System
+
+Below is the proposed file and folder structure for the CHIDI application, assuming a monorepo approach for simplified management during the MVP phase.
+
+```
+chidi-app/
+├── backend/                       # FastAPI Monolith
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/
+│   │   │       ├── endpoints/
+│   │   │       │   ├── auth.py
+│   │   │       │   ├── users.py
+│   │   │       │   ├── workspaces.py
+│   │   │       │   ├── products.py
+│   │   │       │   ├── conversations.py
+│   │   │       │   ├── social_integrations.py
+│   │   │       │   └── webhooks.py
+│   │   │       ├── schemas/
+│   │   │       │   ├── user_schemas.py
+│   │   │       │   ├── workspace_schemas.py
+│   │   │       │   ├── product_schemas.py
+│   │   │       │   ├── conversation_schemas.py
+│   │   │       │   ├── social_schemas.py
+│   │   │       │   └── common_schemas.py
+│   │   │       └── dependencies.py
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── security.py
+│   │   ├── db/
+│   │   │   ├── session.py
+│   │   │   ├── base.py
+│   │   │   ├── models/             # Prisma Models
+│   │   │   │   ├── user_model.py
+│   │   │   │   ├── business_model.py
+│   │   │   │   ├── product_model.py
+│   │   │   │   ├── sku_model.py
+│   │   │   │   ├── variant_model.py
+│   │   │   │   ├── inventory_item_model.py
+│   │   │   │   ├── social_connection_model.py
+│   │   │   │   ├── message_model.py
+│   │   │   │   ├── conversation_model.py
+│   │   │   │   └── business_context_embedding_model.py
+│   │   │   └── migrations/         # Prisma Migrations
+│   │   │       ├── versions/
+│   │   │       ├── env.py
+│   │   │       └── script.py.mako
+│   │   ├── services/               # Business Logic Layer
+│   │   │   ├── auth_service.py
+│   │   │   ├── workspace_service.py
+│   │   │   ├── product_service.py
+│   │   │   ├── conversation_service.py
+│   │   │   ├── ai_service.py
+│   │   │   ├── notification_service.py
+│   │   │   └── sku_monitoring_service.py
+│   │   ├── workers/                # Celery Tasks
+│   │   │   ├── celery_app.py
+│   │   │   └── tasks/
+│   │   │       ├── message_processing_tasks.py
+│   │   │       ├── ai_response_tasks.py
+│   │   │       ├── notification_tasks.py
+│   │   │       └── embedding_tasks.py
+│   │   ├── websockets/
+│   │   │   ├── connection_manager.py
+│   │   │   └── event_handlers.py
+│   │   ├── main.py                 # FastAPI App Instantiation
+│   │   └── tests/
+│   │       ├── api/
+│   │       ├── services/
+│   │       ├── workers/
+│   │       └── conftest.py
+│   ├── prisma/
+│   ├── Dockerfile
+│   ├── requirements.txt            # Or pyproject.toml for Poetry
+│   └── .env.example
+├── frontend/                      # Next.js + Tailwind + Shadcn (PWA)
+│   ├── app/
+│   │   ├── (auth)/                # Route group for auth pages
+│   │   │   ├── login/page.tsx
+│   │   │   ├── signup/page.tsx
+│   │   │   ├── forgot-password/page.tsx
+│   │   │   └── callback/page.tsx  # OAuth callback
+│   │   ├── (app)/                 # Route group for authenticated app
+│   │   │   ├── layout.tsx         # Main app layout
+│   │   │   ├── dashboard/page.tsx # Future
+│   │   │   ├── products/
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── new/page.tsx
+│   │   │   │   └── [productId]/edit/page.tsx
+│   │   │   ├── conversations/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [conversationId]/page.tsx
+│   │   │   ├── workspace/
+│   │   │   │   ├── onboarding/page.tsx
+│   │   │   │   └── profile/page.tsx
+│   │   │   ├── settings/
+│   │   │   │   ├── account/page.tsx
+│   │   │   │   └── integrations/page.tsx # Social media connections
+│   │   │   └── loading.tsx
+│   │   ├── layout.tsx             # Root layout
+│   │   └── global.css
+│   ├── components/
+│   │   ├── auth/
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── SignupForm.tsx
+│   │   │   └── OAuthButton.tsx
+│   │   ├── core/                  # Core UI (buttons, inputs etc from Shadcn)
+│   │   ├── layout/
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Header.tsx
+│   │   │   └── UserNav.tsx
+│   │   ├── products/
+│   │   │   ├── ProductForm.tsx
+│   │   │   ├── ProductTable.tsx
+│   │   │   └── VariantManager.tsx
+│   │   ├── conversations/
+│   │   │   ├── ChatInterface.tsx
+│   │   │   ├── ConversationListItem.tsx
+│   │   │   └── Message.tsx
+│   │   └── workspace/
+│   │       ├── OnboardingForm.tsx
+│   │       └── ConversationalUI.tsx
+│   ├── lib/
+│   │   ├── supabase/
+│   │   │   ├── client.ts          # Client-side Supabase client
+│   │   │   └── server.ts          # Server-side Supabase client (for Route Handlers, Server Actions)
+│   │   ├── auth.ts                # Auth helper functions, context
+│   │   ├── utils.ts
+│   │   └── types.ts
+│   ├── hooks/
+│   │   └── useAuth.ts
+│   ├── contexts/
+│   │   └── AuthContext.tsx
+│   ├── public/
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── next.config.mjs
+│   ├── tsconfig.json
+│   └── .env.local.example
+├── docs/                          # Documentation (Mermaid diagrams, ADRs etc.)
+│   └── architecture.md
+├── scripts/                       # CI/CD, deployment scripts
+├── docker-compose.yml             # For local development (Redis, etc.)
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 6. Technical Specifications
+
+This section details the technical specifications for each core feature of the CHIDI MVP.
+
+### 6.1 User Authentication
+
+**Feature Goal:** Allows users to securely sign up, log in, and log out of their CHIDI account using email/password or Google login. This ensures session security and individual business data isolation from the start.
+
+#### 6.1.1 Functional Requirements
+
+*   Support for email/password registration and login.
+*   Support for Google OAuth 2.0 registration and login.
+*   Secure storage of user credentials (delegated to Supabase Auth).
+*   Session management using JWTs (handled by Supabase Auth).
+*   Optional email confirmation for new email/password sign-ups (configurable in Supabase).
+*   "Forgot Password" functionality for email/password users.
+*   Secure logout mechanism, invalidating session tokens.
+*   Upon successful authentication, user is redirected to their workspace or the onboarding flow if not yet completed.
+*   User data (ID, email, OAuth provider info) stored in Supabase `auth.users` table and potentially synced to a public `users` table for additional profile information.
+
+#### 6.1.2 Non-Functional Requirements
+
+*   **Security:** High. Leverage Supabase Auth for industry-standard security practices. All sensitive operations handled by Supabase. JWT validation on the backend is critical.
+*   **Usability:** Streamlined signup/login flows. Clear error messaging. Responsive design for auth forms.
+*   **Performance:** Authentication operations should be fast. Supabase Auth is optimized for this. Backend JWT validation should be lightweight.
+*   **Reliability:** Supabase Auth provides high availability.
+
+#### 6.1.3 User Interface Requirements
+
+*   **Pages:** Signup, Login, Forgot Password, OAuth Callback.
+*   **Components:**
+    *   `LoginForm.tsx`: Email, password fields, login button, link to signup/forgot password, Google login button.
+    *   `SignupForm.tsx`: Email, password, confirm password fields, signup button, link to login, Google signup button.
+    *   `OAuthButton.tsx`: "Sign in/up with Google" button.
+*   **Mockups/Wireframes:** (To be provided by Design Team. Standard auth forms expected).
+    *   Layout: Auth pages will use a simple layout (`app/(auth)/layout.tsx`).
+*   **Responsiveness:** Forms must be responsive and accessible on mobile and desktop devices.
+
+#### 6.1.4 API Specifications
+
+*   **Frontend to Supabase Auth:** Interactions primarily use the Supabase JS client library. No direct CHIDI API for auth operations.
+*   **FastAPI Backend - JWT Validation:**
+    *   Protected FastAPI endpoints will require a JWT in the `Authorization: Bearer <JWT>` header.
+    *   A dependency (`backend/app/api/v1/dependencies.py:get_current_user`) will validate the JWT and extract user identity.
+
+#### 6.1.5 Database Schema Design
+
+*   **Supabase `auth.users` table:** (Managed by Supabase)
+    *   Stores core user identity information (ID, email, encrypted password, etc.).
+*   **Public `users` table (CHIDI Backend - Supabase(Postgres)):** (Optional, for profile extension)
+    *   `id` (UUID, Primary Key, Foreign Key to `auth.users.id`)
+    *   `email` (TEXT, Unique, Indexed)
+    *   `full_name` (TEXT, Nullable)
+    *   `avatar_url` (TEXT, Nullable)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* Primary key on `id`, unique index on `email`.
+    *   *Foreign Key:* `id` references `auth.users.id` ON DELETE CASCADE (or SET NULL if soft delete is preferred for user content).
+    *   *Migration/Versioning:* Prisma will manage schema changes for this table.
+
+#### 6.1.6 Comprehensive API Design
+
+*   **Frontend to Supabase Auth (via Supabase JS Client):**
+    *   `supabase.auth.signUp({ email, password })`
+    *   `supabase.auth.signInWithPassword({ email, password })`
+    *   `supabase.auth.signInWithOAuth({ provider: 'google' })`
+    *   `supabase.auth.signOut()`
+    *   `supabase.auth.resetPasswordForEmail(email)`
+    *   `supabase.auth.updateUser({ password: newPassword })` (for password updates post-reset)
+    *   `supabase.auth.onAuthStateChange((event, session) => {})` (for listening to auth state changes)
+*   **FastAPI Backend - JWT Validation Middleware/Dependency:**
+    *   Utilizes `python-jose` or Supabase Python client for JWT validation.
+    *   Configuration: `SUPABASE_URL`, `SUPABASE_ANON_KEY` (or `SUPABASE_JWT_SECRET`).
+    *   On successful validation, `user_id` (from `sub` claim) is available in the request context.
+    *   Error Handling: `HTTPException` (401 Unauthorized) for invalid/expired tokens.
+*   **CHIDI API Endpoints (related to user profile, post-authentication):**
+    *   `GET /api/v1/users/me`: Retrieves profile of the authenticated user from the public `users` table.
+    *   `PUT /api/v1/users/me`: Updates profile of the authenticated user.
+
+#### 6.1.7 Frontend Architecture
+
+*   **Component Hierarchy:**
+    *   `app/(auth)/layout.tsx`: Common layout for authentication pages.
+    *   `app/(auth)/signup/page.tsx` -> `components/auth/SignupForm.tsx`, `components/auth/OAuthButton.tsx`
+    *   `app/(auth)/login/page.tsx` -> `components/auth/LoginForm.tsx`, `components/auth/OAuthButton.tsx`
+    *   `app/(auth)/forgot-password/page.tsx`
+    *   `app/(auth)/callback/page.tsx`: Handles OAuth callback redirection.
+*   **Reusable Components:** `LoginForm.tsx`, `SignupForm.tsx`, `OAuthButton.tsx`.
+*   **State Management:**
+    *   `contexts/AuthContext.tsx`: Provides global authentication state (user, session, loading status).
+    *   `hooks/useAuth.ts`: Custom hook to consume `AuthContext` and interact with Supabase auth client.
+    *   Supabase client handles session persistence (e.g., localStorage).
+*   **Routing and Navigation:**
+    *   Next.js App Router (`app` directory).
+    *   Public routes: `/login`, `/signup`, `/forgot-password`.
+    *   Protected routes: All routes under `app/(app)/` will require authentication. Redirection to `/login` if unauthenticated.
+    *   Post-login redirection to `/workspace/onboarding` or `/dashboard`.
+*   **Responsive Design:** Auth forms and pages must be fully responsive (Tailwind CSS).
+
+#### 6.1.8 Detailed CRUD Operations (Public `users` table)
+
+*   **Create:**
+    *   **Trigger:** Automatically on new user signup in `auth.users` via a Supabase database trigger (if `users` table is in Supabase DB) or on the first authenticated API call to the FastAPI backend.
+    *   **Mechanism (DB Trigger):** `INSERT INTO public.users (id, email) VALUES (NEW.id, NEW.email);`
+    *   **Mechanism (API):** If user record not found in `public.users` upon first API call, create it using JWT `sub` and `email`.
+    *   **Validation Rules:** `id` must exist in `auth.users`. `email` must be a valid format.
+    *   **Required Fields:** `id`, `email`.
+*   **Read:**
+    *   **Endpoint:** `GET /api/v1/users/me`
+    *   **Functionality:** Fetches the authenticated user's profile information.
+    *   **Filtering/Pagination/Sorting:** Not applicable for `/me` endpoint.
+*   **Update:**
+    *   **Endpoint:** `PUT /api/v1/users/me`
+    *   **Functionality:** Allows authenticated user to update their `full_name`, `avatar_url`.
+    *   **Validation Rules:** Input sanitization for text fields.
+    *   **Partial vs. Full:** Partial updates allowed.
+*   **Delete:**
+    *   **Mechanism:** User deletion in `auth.users` (via Supabase user management) should cascade delete the corresponding record in `public.users` (if `ON DELETE CASCADE` is set on the foreign key).
+    *   **Soft vs. Hard Delete:** For MVP, hard delete linked to `auth.users` is simpler. Future consideration for soft delete if user data needs to be retained for legal/audit reasons while deactivating access.
+
+#### 6.1.9 User Experience Flow
+
+*   **Sign Up (Email/Password):**
+    1.  User navigates to `/signup`.
+    2.  Fills email, password, confirm password.
+    3.  Clicks "Sign Up".
+    4.  Frontend calls `supabase.auth.signUp()`.
+    5.  Loading state.
+    6.  On success (and if email confirmation enabled): Message "Please check your email to verify your account."
+    7.  On success (no email confirmation): Redirect to `/workspace/onboarding`.
+    8.  On error (e.g., email exists, password weak): Display inline error message.
+*   **Log In (Google OAuth):**
+    1.  User navigates to `/login`.
+    2.  Clicks "Log in with Google".
+    3.  Frontend calls `supabase.auth.signInWithOAuth({ provider: 'google' })`.
+    4.  Redirected to Google's authentication screen.
+    5.  User authenticates with Google.
+    6.  Redirected back to CHIDI (`/callback` or Supabase default).
+    7.  Supabase client establishes session. `onAuthStateChange` fires.
+    8.  Redirect to `/workspace/onboarding` or main dashboard.
+*   **Log Out:**
+    1.  User clicks "Log Out" button (e.g., in user navigation).
+    2.  Frontend calls `supabase.auth.signOut()`.
+    3.  Session cleared.
+    4.  Redirect to `/login` page.
+*   **Password Reset:**
+    1.  User navigates to `/forgot-password`.
+    2.  Enters email, clicks "Send Reset Link".
+    3.  Frontend calls `supabase.auth.resetPasswordForEmail()`.
+    4.  Message "Password reset link sent if email exists."
+    5.  User receives email, clicks link (to a Supabase-hosted or custom CHIDI page).
+    6.  Enters new password, confirms.
+    7.  Password updated via Supabase.
+
+#### 6.1.10 Security Considerations
+
+*   **Authentication Flow:** Supabase Auth handles OAuth 2.0 PKCE flow, secure password hashing (e.g., bcrypt), and salting.
+*   **Authorization:** JWT `sub` claim used by FastAPI backend to identify the user and authorize access to resources.
+*   **Data Validation:** Frontend validation for email format, password strength (client-side hints). Supabase handles server-side validation (e.g., email uniqueness).
+*   **CSRF Protection:** Not inherently an issue with JWTs in Authorization headers. If server actions or form posts using cookies are used, Next.js provides CSRF protection.
+*   **XSS Protection:** React helps prevent XSS. Ensure any user-generated content (e.g., user name) is properly sanitized if rendered directly.
+*   **Secure JWT Handling:** Supabase client library manages JWT storage (typically localStorage or secure cookies). Backend must validate JWT signature, expiry, issuer, and audience.
+*   **Rate Limiting:** Supabase Auth has built-in rate limiting for auth operations. Backend API endpoints should also have rate limiting (e.g., `slowapi` for FastAPI).
+*   **Session Hijacking:** Use HTTPS everywhere. Supabase's default JWT handling is robust.
+
+#### 6.1.11 Testing Strategy
+
+*   **Unit Tests:**
+    *   Frontend: Test form components (`LoginForm`, `SignupForm`) validation logic, state changes. Mock Supabase client methods. Test `AuthContext` and `useAuth` hook behavior.
+    *   Backend: Test JWT validation dependency (`get_current_user`) with valid, invalid, expired tokens (mocking Supabase/JWT library).
+*   **Integration Tests:**
+    *   Frontend: Test components interacting with a mocked Supabase client to simulate full auth flows.
+    *   Backend: Test FastAPI endpoints requiring authentication using mock JWTs. Test user profile CRUD operations against a test database.
+*   **End-to-End Tests (e.g., Playwright/Cypress):**
+    *   Full signup flow (email & Google - Google may require special handling in CI).
+    *   Full login flow (email & Google).
+    *   Logout flow.
+    *   Password reset flow.
+    *   Attempting to access protected routes before/after login.
+*   **Performance Testing:** Not a primary concern for auth in MVP beyond Supabase's capabilities. Backend JWT validation should be benchmarked if custom logic is heavy.
+
+#### 6.1.12 Data Management
+
+*   **User Data Lifecycle:**
+    *   Created upon signup via Supabase.
+    *   Profile data in `public.users` created/updated accordingly.
+    *   Deleted upon user account deletion request (handled via Supabase, with cascading deletes to `public.users`).
+*   **Caching:**
+    *   Session information (JWT) cached by Supabase client in browser.
+    *   User profile data (`/users/me`) can be cached client-side using SWR/React Query.
+*   **Real-time Data:** `onAuthStateChange` listener provides real-time updates to auth state in the frontend.
+
+#### 6.1.13 Error Handling & Logging
+
+*   **Frontend:**
+    *   Display user-friendly error messages on forms (e.g., "Invalid credentials", "Email already in use", "Password too weak").
+    *   Log detailed errors to browser console during development.
+    *   Integrate Sentry for capturing runtime errors in production.
+*   **Backend (FastAPI):**
+    *   JWT validation dependency returns HTTP 401/403 errors with appropriate JSON detail.
+    *   Log failed token validation attempts (could be noisy; sample or log at INFO level).
+    *   Use structured logging (JSON format) for all requests, including `user_id` once authenticated.
+*   **Monitoring:**
+    *   Track signup rates, login success/failure rates (via Supabase logs or frontend analytics events sent to PostHog).
+
+---
+*(The structure above will be repeated for sections 6.2, 6.3, 6.4, and 6.5, populating them with the details from the provided `FEATURES.md` input.)*
+
+### 6.2 Workspace (Onboarding + Business Context Capture)
+
+**Feature Goal:** A conversational AI-powered workspace that captures comprehensive business context during onboarding and serves as the central hub for ongoing business operations management. Users interact through a chat interface to set up their business profile and receive contextual assistance.
+
+#### 6.2.1 Functional Requirements
+*   Conversational UI for onboarding and ongoing interaction within the workspace.
+*   Visual progress tracking during onboarding (e.g., progress bar, milestones like "Basic Info", "Business Details", "Goals").
+*   Structured, AI-guided question flow for onboarding (e.g., business name, type, target audience, products/services overview, social media presence, business goals).
+*   Dynamic follow-up questions generated by AI based on user responses to gather richer context.
+*   Ability for users to skip questions during onboarding (with sensible defaults or AI assumptions where possible).
+*   Generation of a business profile summary for user review and confirmation at the end of onboarding.
+*   Storage of business context in a structured format (Supabase(Postgres) via `businesses` table) and as vector embeddings (Supabase Vector via `business_context_embeddings` table) for AI retrieval.
+*   Post-onboarding chat interface for users to update their business context or ask business-related questions to the AI.
+*   AI responses within the workspace chat informed by the stored business context.
+*   Prompt suggestions provided to the user based on profile completeness or common tasks.
+*   Persistence of chat history for the workspace assistant.
+
+#### 6.2.2 Non-Functional Requirements
+*   **Usability:** Intuitive conversational interface. Gamified elements (progress bar, milestones) to encourage completion. Clear guidance from AI.
+*   **Performance:**
+    *   AI response times in chat should be reasonably fast (e.g., < 3-5 seconds for typical interactions).
+    *   Embedding generation can be asynchronous but should complete in a timely manner.
+    *   Vector search for context retrieval must be fast.
+*   **Scalability:** AI service calls (OpenAI) and vector database operations should scale with user load. Asynchronous processing of embeddings helps.
+*   **Accuracy:** AI's understanding of user input and retrieval of relevant context are crucial.
+*   **Extensibility:** Onboarding flow and context captured should be extensible in the future.
+
+#### 6.2.3 User Interface Requirements
+*   **Pages:**
+    *   `/workspace/onboarding`: For new users guided through context capture.
+    *   `/workspace/profile` (or integrated into a general workspace chat view): For viewing/editing business profile and ongoing AI interaction.
+*   **Components:**
+    *   `ConversationalUI.tsx`: Core component for displaying chat messages (user and AI), handling user input, and managing message streaming.
+    *   `OnboardingForm.tsx`: If any parts of onboarding use structured forms alongside chat. (Primarily conversational as per spec).
+    *   `ProgressBar.tsx`: Displays visual progress of onboarding.
+*   **Mockups/Wireframes:** (To be provided by Design Team).
+    *   Chat interface with message bubbles, input area, send button.
+    *   Progress bar prominently displayed during onboarding.
+    *   Milestone indicators.
+*   **Responsiveness:** Chat interface must be fully responsive for desktop and mobile.
+
+#### 6.2.4 API Specifications
+*   Frontend (Workspace UI) <-> FastAPI Backend (`/workspaces`, `/chat` or WebSocket endpoints).
+*   FastAPI Backend <-> Supabase DB (Supabase(Postgres) for `businesses` table, Supabase Vector for `business_context_embeddings`).
+*   FastAPI Backend (AI Service) <-> OpenAI API (GPT for conversational logic, Ada for text embeddings).
+*   Real-time chat via WebSockets (FastAPI <-> Frontend).
+
+#### 6.2.5 Database Schema Design
+*   **`businesses` table (Supabase(Postgres)):**
+    *   `id` (UUID, Primary Key)
+    *   `user_id` (UUID, Foreign Key to `public.users.id` or `auth.users.id`, Unique)
+    *   `name` (TEXT, Nullable)
+    *   `business_type` (TEXT, Nullable)
+    *   `target_audience_description` (TEXT, Nullable)
+    *   `social_media_presence` (JSONB, Nullable - e.g., `{"instagram": "handle", "whatsapp": "number"}`)
+    *   `goals_preferences` (TEXT, Nullable)
+    *   `onboarding_progress` (JSONB, Nullable - e.g., `{"current_step": "details", "milestones_completed": ["basic_info"]}`)
+    *   `profile_completeness_score` (INTEGER, Default 0)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Unique index on `user_id`, index on `name`.
+    *   *Foreign Key:* `user_id` references `users.id` ON DELETE CASCADE.
+*   **`business_context_chunks` table (Supabase(Postgres)):**
+    *   `id` (UUID, Primary Key)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`)
+    *   `chunk_text` (TEXT, Not Null)
+    *   `source_field` (TEXT, Nullable - e.g., "target_audience_description")
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Index on `business_id`.
+    *   *Foreign Key:* `business_id` references `businesses.id` ON DELETE CASCADE.
+*   **`business_context_embeddings` table (Supabase Vector):**
+    *   `id` (UUID, Primary Key, Foreign Key to `business_context_chunks.id`)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`, Indexed)
+    *   `embedding` (VECTOR(1536), Not Null) - Assuming OpenAI Ada v2 embedding size.
+    *   `content` (TEXT) - Copy of `chunk_text` for context with similarity search results.
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Index on `business_id`. Vector index (e.g., HNSW, IVFFlat) on `embedding` column managed by Supabase Vector.
+    *   *Foreign Key:* `business_id` references `businesses.id` ON DELETE CASCADE. `id` could reference `business_context_chunks.id` ON DELETE CASCADE.
+*   **`workspace_chat_messages` table (Supabase(Postgres)):**
+    *   `id` (UUID, Primary Key)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`)
+    *   `sender_type` (ENUM('user', 'ai'), Not Null) - Define ENUM type: `CREATE TYPE message_sender_type AS ENUM ('user', 'ai');`
+    *   `content` (TEXT, Not Null)
+    *   `timestamp` (TIMESTAMPZ, Default NOW(), Indexed)
+    *   *Indexing Strategy:* PK on `id`, Index on (`business_id`, `timestamp`).
+    *   *Foreign Key:* `business_id` references `businesses.id` ON DELETE CASCADE.
+*   **Migration/Versioning:** Prisma for Supabase(Postgres) schema changes. Supabase Vector schema managed via Supabase dashboard/CLI.
+
+#### 6.2.6 Comprehensive API Design (FastAPI)
+*   **`POST /api/v1/workspaces/onboarding`**:
+    *   Purpose: Progress through onboarding steps via conversational interaction.
+    *   Request Body: `{"business_id": "uuid", "current_input": "User's response", "session_state": {...}}` (Session state could manage current question/context).
+    *   Response Body: `{"ai_message": "AI's next question or statement", "next_questions_suggestions": [...], "onboarding_progress": {"percentage": 20, "milestone_achieved": "Basic Info"}, "updated_session_state": {...}}`
+    *   Authentication: Required. User must be associated with the `business_id`.
+*   **`GET /api/v1/workspaces/context`**:
+    *   Purpose: Retrieve the current structured business profile for the authenticated user's business.
+    *   Response Body: `{ "id": "uuid", "name": "...", "business_type": "...", ... }` (Data from `businesses` table).
+    *   Authentication: Required.
+*   **`PUT /api/v1/workspaces/context`**:
+    *   Purpose: Allow user to update their business profile directly (e.g., via a form or AI understanding an update command).
+    *   Request Body: Partial or full business profile data (`{ "name": "New Name", "target_audience_description": "..." }`).
+    *   Response Body: Updated business profile data.
+    *   Side Effects: Triggers asynchronous re-chunking and re-embedding of modified context fields.
+    *   Authentication: Required.
+*   **`POST /api/v1/workspaces/chat`** (Alternative or supplement to WebSocket for non-streaming interactions):
+    *   Purpose: User sends a message to the workspace AI (post-onboarding).
+    *   Request Body: `{"business_id": "uuid", "message": "User's query"}`
+    *   Response Body: `{"ai_response": "AI's answer based on context"}` (Can be synchronous for simple queries or acknowledge and deliver response via WebSocket).
+    *   Authentication: Required.
+*   **WebSocket Endpoint: `ws /api/v1/workspaces/ws/chat`**:
+    *   Purpose: Real-time conversational UI for both onboarding and ongoing assistance.
+    *   Connection: Client sends auth token upon connection. Server authenticates and associates WebSocket with `user_id`/`business_id`.
+    *   Messages (Client -> Server): `{"type": "user_message", "payload": {"text": "User input"}}`
+    *   Messages (Server -> Client): `{"type": "ai_message", "payload": {"text": "AI response", "suggestions": [...]}}`, `{"type": "progress_update", "payload": {...}}`
+    *   Error Handling: JSON error messages over WebSocket for issues.
+*   **Rate Limiting & Caching:**
+    *   Rate limit OpenAI API calls.
+    *   Cache frequently accessed business context (e.g., in Redis or memory cache with TTL).
+
+#### 6.2.7 Frontend Architecture
+*   **Component Hierarchy:**
+    *   `app/(app)/workspace/onboarding/page.tsx` -> `components/workspace/ConversationalUI.tsx`, `components/workspace/ProgressBar.tsx`.
+    *   `app/(app)/workspace/profile/page.tsx` (or a dashboard incorporating chat): May use `ConversationalUI.tsx` for AI interaction and display structured profile data.
+    *   `components/workspace/ConversationalUI.tsx`: Manages chat message display, user input field, sending/receiving messages (HTTP or WebSocket). Handles message streaming if AI responses are chunked.
+    *   `components/workspace/ProgressBar.tsx`: Visual component reflecting `onboarding_progress` from API/WebSocket.
+*   **Reusable Components:** `ConversationalUI.tsx` could be reused for other chat features.
+*   **State Management:**
+    *   Local component state within `ConversationalUI.tsx` for current chat messages, input value.
+    *   SWR/React Query for fetching/mutating business context (`/api/v1/workspaces/context`).
+    *   Recoil/Zustand or React Context for managing WebSocket connection state and shared workspace data if necessary.
+*   **Routing and Navigation:**
+    *   `/workspace/onboarding` for users who haven't completed onboarding.
+    *   Post-onboarding, users might land on a main workspace page or dashboard that includes the chat interface.
+*   **Responsive Design:** `ConversationalUI` must be adaptable to various screen sizes, ensuring readability and ease of input on mobile.
+
+#### 6.2.8 Detailed CRUD Operations
+*   **Business (`businesses` table):**
+    *   **Create:**
+        *   **Trigger:** Typically upon first access to a workspace endpoint after signup, or as the first step of the onboarding API. A `business` record is created and linked to the `user_id`.
+        *   **Endpoint:** Implicitly via `POST /api/v1/workspaces/onboarding` if no business exists for the user, or a dedicated internal service call.
+        *   **Validation Rules:** `user_id` must exist and not already have a business (for MVP: one business per user).
+        *   **Required Fields:** `user_id`. Other fields populated during onboarding.
+    *   **Read:**
+        *   **Endpoint:** `GET /api/v1/workspaces/context` (retrieves the business associated with the authenticated user).
+    *   **Update:**
+        *   **Endpoint:** `PUT /api/v1/workspaces/context`.
+        *   **Functionality:** Updates specified fields in the `businesses` table.
+        *   **Side Effect:** Triggers Celery task for re-chunking and re-embedding relevant text fields.
+        *   **Validation Rules:** Ensure data types match schema. Sanitize text inputs.
+    *   **Delete:**
+        *   **Policy:** Less common for MVP. If a user deletes their account, associated business data should be removed (cascading delete from `users` table).
+        *   **Soft vs. Hard:** Hard delete for MVP.
+*   **Business Context Chunks (`business_context_chunks`) & Embeddings (`business_context_embeddings`):**
+    *   **Create:**
+        *   **Trigger:** Asynchronously via a Celery task (`embedding_tasks.py`) when `businesses` table context is created or updated.
+        *   **Process:** Text fields from `businesses` (e.g., `target_audience_description`, `goals_preferences`) are chunked into manageable pieces. Each chunk is stored in `business_context_chunks`. Then, embeddings are generated for each chunk using OpenAI API and stored in `business_context_embeddings` along with the `business_id` and original content.
+    *   **Read:**
+        *   **Mechanism:** Indirectly. The AI service performs vector similarity search against `business_context_embeddings` (e.g., `MATCH_DOCUMENTS` in Supabase Vector) using an embedding of the user's query to find relevant context chunks.
+    *   **Update:**
+        *   **Process:** Effectively a delete-and-recreate process for affected chunks/embeddings. When a source field in `businesses` is updated, old chunks/embeddings derived from that field for that `business_id` are deleted or marked as stale, and new ones are generated.
+    *   **Delete:**
+        *   **Trigger:** When the parent `business` record is deleted (cascading) or when a specific context field is cleared/emptied.
+*   **Workspace Chat Messages (`workspace_chat_messages`):**
+    *   **Create:**
+        *   **Trigger:** Every time a user sends a message or AI responds within the workspace chat.
+        *   **Mechanism:** WebSocket handler or HTTP chat endpoint (`POST /api/v1/workspaces/chat`) inserts a new record.
+        *   **Required Fields:** `business_id`, `sender_type`, `content`.
+    *   **Read:**
+        *   **Endpoint:** `GET /api/v1/workspaces/chat_history?page=N&limit=M` (or loaded via WebSocket on chat open).
+        *   **Functionality:** Retrieves paginated chat history for a given `business_id`. Sorted by `timestamp`.
+    *   **Update/Delete:** Generally not allowed for chat messages to maintain conversation integrity.
+
+#### 6.2.9 User Experience Flow (Onboarding Example)
+1.  New user, after signup/login, is redirected to `/workspace/onboarding`.
+2.  **Screen:** A clean interface with a chat window (`ConversationalUI.tsx`) and a `ProgressBar.tsx` at 0%.
+3.  **AI (via chat):** "Welcome to CHIDI! I'm here to help you set up your business profile. This will help me assist you better later. Let's start with some basic info. What's your business name?"
+4.  User types business name (e.g., "The Cozy Corner Cafe") and sends.
+5.  **AI:** "Great, 'The Cozy Corner Cafe'! And what type of business is it? (e.g., e-commerce store, local coffee shop, marketing agency)"
+6.  User responds (e.g., "local coffee shop").
+7.  `ProgressBar.tsx` updates (e.g., to 20%, "Basic Info" milestone checked). `businesses` table record for user is updated with `name` and `business_type`.
+8.  This conversational flow continues for target audience, key products/services overview, social media handles, main business goals.
+9.  If user provides rich detail (e.g., long description for target audience), AI: "That's excellent detail! This will be very helpful." Progress bar might jump more significantly.
+10. If user types "skip" or "I don't know yet", AI: "Okay, we can come back to that later. For now, let's move on to..." (and might use a placeholder or make a note to revisit).
+11. **End of Questions:** AI: "Thanks for sharing all that! Here's a quick summary of your business profile: [AI generates a concise summary of the collected info]. Does this look correct, or would you like to change anything?" (Buttons: "Yes, looks good!", "No, I need to change something").
+12. **If "Yes, looks good!":**
+    *   Progress bar to 100% "Setup Complete!". A small celebratory animation or message.
+    *   The collected context is finalized. Asynchronous task to chunk and embed all relevant information is confirmed/completed.
+    *   User is redirected to the main workspace/dashboard area, now with their context established.
+13. **If "No, I need to change something":**
+    *   AI: "No problem! What would you like to change or add? You can tell me, for example, 'Change business type to artisan bakery' or 'Add more about my target audience.'"
+    *   User interacts to correct information. AI updates context and re-confirms.
+*   **Loading States:** Show typing indicators for AI. Loading spinners for backend operations if responses are not immediate.
+*   **Error Handling (User Perspective):**
+    *   If AI doesn't understand: "I'm sorry, I didn't quite get that. Could you please rephrase?"
+    *   If API error: "Oops, something went wrong while saving. Let's try that again."
+
+#### 6.2.10 Security Considerations
+*   **Authentication:** All workspace APIs and WebSocket connections must be authenticated, ensuring user can only access/modify their own business data.
+*   **Authorization:** Business context is strictly scoped by `business_id`, which is linked to `user_id`. Prevent users from accessing other businesses' data.
+*   **Data Validation:** All user inputs (responses during onboarding, direct profile updates) must be validated and sanitized on the backend before storage or processing by AI.
+*   **Prompt Injection (for AI):**
+    *   Sanitize user inputs before incorporating them into prompts for OpenAI.
+    *   Use strong system prompts to guide AI behavior, define its role, and limit its operational scope (e.g., "You are a helpful assistant for setting up a business profile. Only discuss topics related to business information.").
+    *   Be cautious about AI generating executable code or making external API calls based directly on un-sanitized user input.
+*   **Data Privacy:** Business context is sensitive. Ensure database access controls are properly configured. Encrypt sensitive data at rest (Supabase handles this for DB) and in transit (HTTPS/WSS).
+*   **WebSocket Security:** Use WSS. Authenticate connections using tokens.
+
+#### 6.2.11 Testing Strategy
+*   **Unit Tests:**
+    *   Backend: Test onboarding conversational flow logic (state transitions, question generation based on predefined script/rules). Test context chunking algorithms. Test AI service methods for prompt construction and parsing OpenAI responses (mocking OpenAI API).
+    *   Frontend: Test `ConversationalUI.tsx` message rendering, input handling, WebSocket event processing. Test `ProgressBar.tsx` updates based on props.
+*   **Integration Tests:**
+    *   Test FastAPI endpoints for context CRUD operations with a test database.
+    *   Test WebSocket message exchange: client sends message, server processes (mocking AI), server sends response, client updates UI.
+    *   Test embedding generation flow: update business context -> verify Celery task is queued -> mock OpenAI embedding -> verify embeddings stored in test vector DB.
+    *   Test vector similarity search with mock embeddings to ensure context retrieval works.
+*   **End-to-End Tests:**
+    *   Full onboarding flow: User signs up, lands on onboarding, interacts with (mocked or real if feasible) AI to provide business details, confirms summary, context is saved and embedded.
+    *   Post-onboarding: User asks a question in workspace chat, AI retrieves relevant context and formulates an answer.
+*   **AI Quality Testing:**
+    *   Define a set of "golden" onboarding conversations and expected context outputs.
+    *   Evaluate relevance and accuracy of AI's follow-up questions and generated summaries.
+    *   Assess quality of AI responses to post-onboarding queries based on mock context.
+    *   Manual review of a sample of AI interactions during beta.
+
+#### 6.2.12 Data Management
+*   **Business Context Lifecycle:** Created during onboarding, continuously updatable by the user via chat or profile editing. Embeddings are derived and updated asynchronously.
+*   **Embedding Updates Strategy:**
+    *   When a text field in `businesses` table is updated, identify the corresponding chunks/embeddings.
+    *   Delete old embeddings for that `business_id` and `source_field`.
+    *   Re-chunk the updated text and generate new embeddings.
+    *   Consider versioning or timestamping embeddings if historical context analysis is ever needed.
+*   **Chat History (`workspace_chat_messages`):** Persisted indefinitely for MVP. Implement pagination for efficient retrieval in the UI.
+*   **Caching:**
+    *   Cache frequently accessed, relatively static business context in Redis or an in-memory cache (e.g., business name, type) to reduce DB load for AI service.
+    *   WebSocket session data or recent chat history could be temporarily cached in Redis for quick recovery or state management across WebSocket server instances (if scaling out).
+*   **Vector DB Indexing:** Ensure `business_context_embeddings` table in Supabase Vector has an appropriate vector index (e.g., HNSW) configured for fast and accurate similarity searches. Filter searches by `business_id`.
+
+#### 6.2.13 Error Handling & Logging
+*   **Frontend:**
+    *   Display user-friendly errors in the chat UI (e.g., "AI assistant is currently unavailable," "Failed to save your response, please try again," "I didn't understand that, can you rephrase?").
+    *   Log detailed errors to Sentry.
+*   **Backend:**
+    *   Log errors from OpenAI API calls (e.g., rate limits, API down, invalid requests) with relevant context (e.g., `business_id`, prompt snippet).
+    *   Log issues during embedding generation (Celery task failures) or vector DB operations.
+    *   Structured logs for all chat interactions (user message, AI prompt, AI response, retrieved context snippets) including `business_id`, `user_id`, timestamps.
+    *   If AI fails to generate a response or an error occurs mid-conversation, provide a graceful fallback (e.g., "I'm having a bit of trouble right now. Let's try that again in a moment.").
+*   **Monitoring:**
+    *   Track onboarding completion rates and drop-off points.
+    *   Monitor average profile completeness scores.
+    *   Track frequency of AI "misunderstandings" or fallback responses.
+    *   Monitor latency of AI responses and embedding generation.
+    *   Alert on high rates of OpenAI API errors or Celery task failures related to context processing.
+
+### 6.3 Products (Inventory Manager)
+
+**Feature Goal:** Lets users add products with variants (size, color, etc.) and track availability using SKUs (auto-generated, modifiable with validation).
+
+#### 6.3.1 Functional Requirements
+*   Full CRUD operations for products (name, description, category, images, base price).
+*   Support for product variants (e.g., attributes like size, color, material).
+*   Each unique combination of variant options (e.g., Size: M, Color: Blue) should represent a distinct sellable item (inventory item/SKU).
+*   Ability to define custom price adjustments and manage stock levels for each inventory item/SKU.
+*   SKU Generation:
+    *   Auto-generate unique SKUs based on product name, variants, and potentially business identifier (e.g., `BIZ-PROD-VAR1-VAR2`).
+    *   Allow user override of auto-generated SKUs.
+    *   SKU format validation: Alphanumeric, hyphens allowed, max length (e.g., 50 chars). Must be unique per business.
+*   Inventory tracking per SKU/variant combination.
+*   Linkage between sales and stock levels (stock decrement on sale - this is primarily for future Order Handling, but the data structure supports it).
+*   Ability to view products in a list/table, with key information like name, category, base price, total stock across variants.
+*   Ability to view low stock items (future filter, but schema should support querying stock levels).
+*   Product images: support for uploading/linking multiple images per product.
+
+#### 6.3.2 Non-Functional Requirements
+*   **Usability:** Intuitive forms for product creation and editing, especially for managing complex variants. Clear display of product and inventory information.
+*   **Performance:**
+    *   Fast loading of product lists, even with many products/variants.
+    *   Quick updates to stock levels.
+    *   Efficient querying of product data by AI for the Conversations feature.
+*   **Data Integrity:** Ensure SKU uniqueness within a business. Accurate stock tracking. Consistent pricing.
+*   **Scalability:** System should handle businesses with large product catalogs and many variants.
+*   **Reliability:** Product data is critical; ensure high availability and robust backup/recovery (handled by Supabase).
+
+#### 6.3.3 User Interface Requirements
+*   **Pages:**
+    *   `/products`: Product listing page (table view).
+    *   `/products/new`: Form for adding a new product.
+    *   `/products/[productId]/edit`: Form for editing an existing product.
+*   **Components:**
+    *   `ProductTable.tsx`: Displays list of products with columns for name, category, price, stock summary, actions (edit, delete). Includes sorting, filtering, pagination.
+    *   `ProductForm.tsx`: Main form for product details (name, description, category, base price, image uploads).
+    *   `VariantManager.tsx`: Nested component within `ProductForm` to define variant types (e.g., "Size", "Color") and their possible option values (e.g., "S, M, L"; "Red, Blue, Green").
+    *   `InventoryItemTable.tsx` (or similar dynamic section within `ProductForm`): Dynamically generates rows for each unique combination of selected variant options. Each row allows input for SKU (auto-generated, editable), price adjustment (from base price), stock quantity, and barcode (optional).
+*   **Mockups/Wireframes:** (To be provided by Design Team).
+    *   Table view for product list.
+    *   Multi-section form for product creation/editing, with clear separation for base product info, variant definition, and SKU/inventory details.
+    *   Interactive UI for adding/removing variant types and option values.
+*   **Responsiveness:** Product management forms and tables must be usable on desktop and ideally viewable on mobile (editing complex products on small screens can be challenging but should be graceful).
+
+#### 6.3.4 API Specifications
+*   Frontend (Product Management UI) <-> FastAPI Backend (`/products`, `/inventory_items` endpoints).
+*   FastAPI Backend <-> Supabase DB (PostgreSQL using Prisma for `products`, `product_variants`, `product_variant_options`, `inventory_items` tables).
+*   The Conversations feature will query product/inventory data via internal service calls or dedicated read-optimized API endpoints.
+
+#### 6.3.5 Database Schema Design
+*   **`products` table (PostgreSQL):**
+    *   `id` (UUID, Primary Key)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`, Not Null)
+    *   `name` (TEXT, Not Null)
+    *   `description` (TEXT, Nullable)
+    *   `category` (TEXT, Nullable)
+    *   `base_price` (NUMERIC(10,2), Not Null, CHECK (`base_price` >= 0))
+    *   `images_urls` (JSONB, Nullable - array of URLs, e.g., `["url1", "url2"]`)
+    *   `is_active` (BOOLEAN, Default TRUE, Not Null)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Index on (`business_id`, `name`), Index on (`business_id`, `category`), Index on (`business_id`, `is_active`).
+    *   *Foreign Key:* `business_id` references `businesses.id` ON DELETE CASCADE.
+*   **`product_variants` table (Defines variant types for a product, e.g., "Size", "Color"):**
+    *   `id` (UUID, Primary Key)
+    *   `product_id` (UUID, Foreign Key to `products.id`, Not Null)
+    *   `option_name` (TEXT, Not Null - e.g., "Size")
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   UNIQUE (`product_id`, `option_name`)
+    *   *Indexing Strategy:* PK on `id`, Unique index on (`product_id`, `option_name`).
+    *   *Foreign Key:* `product_id` references `products.id` ON DELETE CASCADE.
+*   **`product_variant_options` table (Defines specific values for variants, e.g., "Small", "Red"):**
+    *   `id` (UUID, Primary Key)
+    *   `variant_id` (UUID, Foreign Key to `product_variants.id`, Not Null) # References the "Size" or "Color" variant type
+    *   `value` (TEXT, Not Null - e.g., "Small", "Red")
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   UNIQUE (`variant_id`, `value`)
+    *   *Indexing Strategy:* PK on `id`, Unique index on (`variant_id`, `value`).
+    *   *Foreign Key:* `variant_id` references `product_variants.id` ON DELETE CASCADE.
+*   **`inventory_items` table (Represents a specific sellable item/SKU):**
+    *   `id` (UUID, Primary Key)
+    *   `product_id` (UUID, Foreign Key to `products.id`, Not Null)
+    *   `sku` (TEXT, Not Null)
+    *   `variant_options_ids` (ARRAY of UUIDs, Nullable - stores `product_variant_options.id` values for this combination, e.g. `{uuid_for_Small, uuid_for_Red}`. Order might matter for consistency.)
+        *   Alternative for `variant_options_ids`: `variant_options_combination` (JSONB, Nullable - e.g., `[{"option_name": "Size", "value": "M"}, {"option_name": "Color", "value": "Blue"}]` or `{"variant_id_for_Size": "option_id_for_M", "variant_id_for_Color": "option_id_for_Blue"}`). Storing IDs is more normalized. The JSONB structure from `FEATURES.md` input is also viable for easier display but harder to enforce integrity. Let's stick to normalized `variant_options_ids` for now.
+    *   `price` (NUMERIC(10,2), Not Null, CHECK (`price` >= 0)) - Actual price of this item (base_price + modifier, or direct set). Storing final price simplifies queries.
+    *   `stock_quantity` (INTEGER, Not Null, Default 0, CHECK (`stock_quantity` >= 0))
+    *   `barcode` (TEXT, Nullable)
+    *   `is_active` (BOOLEAN, Default TRUE, Not Null)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   UNIQUE (`product_id`, `sku`) - Enforces SKU uniqueness per product. A global unique constraint on (`business_id`, `sku`) would be implemented via a trigger or application logic, as `business_id` is not directly on this table but through `product_id`. Better: add `business_id` (denormalized or via trigger) to `inventory_items` and have UNIQUE(`business_id`, `sku`). For MVP, application-level uniqueness check scoped to business.
+    *   *Indexing Strategy:* PK on `id`, Index on `sku`, Index on (`product_id`), Index (`product_id`, `is_active`, `stock_quantity`).
+    *   *Foreign Key:* `product_id` references `products.id` ON DELETE CASCADE. Each UUID in `variant_options_ids` should reference `product_variant_options.id`.
+*   **Migration/Versioning:** Prisma for all Supabase(Postgres) schema changes.
+
+#### 6.3.6 Comprehensive API Design (FastAPI)
+*   **`/api/v1/products`**:
+    *   `POST`: Create a new product.
+        *   Request Body: `{ "name": "T-Shirt", "description": "Comfortable cotton T-Shirt", "category": "Apparel", "base_price": 20.00, "images_urls": ["url1"], "variants": [{"option_name": "Size", "values": ["S", "M", "L"]}, {"option_name": "Color", "values": ["Red", "Blue"]}], "inventory_items": [{"sku": "TSHRT-S-RD", "variant_options": [{"option_name": "Size", "value":"S"}, {"option_name": "Color", "value":"Red"}], "price": 22.00, "stock_quantity": 10}] }`
+            *   Note: `inventory_items` in the request can specify initial SKUs, or they can be auto-generated based on `variants`. API should handle both.
+        *   Response Body: Created product object, including `product_variants`, `product_variant_options`, and generated `inventory_items` with their SKUs. (Status 201)
+    *   `GET`: List products for the authenticated user's business.
+        *   Query Parameters: `page` (int, default 1), `limit` (int, default 20), `category` (str), `search_term` (str for name/description), `is_active` (bool).
+        *   Response Body: `{ "items": [ProductObject...], "total": int, "page": int, "limit": int }`.
+*   **`/api/v1/products/{product_id}`**:
+    *   `GET`: Get a specific product by ID, including its variants and inventory items.
+        *   Response Body: Full `ProductObject` with nested `variants`, `variant_options`, and `inventory_items`.
+    *   `PUT`: Update a product's details (name, description, category, base price, images). Can also update variants structure, which may impact inventory items.
+        *   Request Body: Similar to POST, but with `product_id` in path. Partial updates allowed.
+        *   Response Body: Updated `ProductObject`.
+    *   `DELETE`: Delete a product.
+        *   Action: Soft delete (set `products.is_active = false` and `inventory_items.is_active = false` for associated items).
+        *   Response Body: Status 204 No Content or confirmation message.
+*   **`/api/v1/products/{product_id}/inventory_items`**:
+    *   `POST`: Add a new inventory item (specific variant combination/SKU) to an existing product.
+        *   Request Body: `{ "sku": "USER-SKU-IF-ANY (optional)", "variant_options": [{"option_name": "Size", "value":"XL"}, {"option_name": "Color", "value":"Green"}], "price": 25.00, "stock_quantity": 5, "barcode": "..." }`
+        *   Response Body: Created `InventoryItemObject`. (Status 201)
+    *   `GET`: List all inventory items for a product. (Could be part of `GET /api/v1/products/{product_id}` response).
+*   **`/api/v1/inventory_items/{inventory_item_id}`**:
+    *   `GET`: Get specific inventory item details by its ID.
+    *   `PUT`: Update an inventory item (e.g., `sku`, `price`, `stock_quantity`, `barcode`, `is_active`).
+        *   Request Body: Partial `InventoryItemObject`.
+        *   Response Body: Updated `InventoryItemObject`.
+    *   `DELETE`: Delete an inventory item (e.g., if a variant combination is discontinued).
+        *   Action: Soft delete (`is_active = false`).
+        *   Response Body: Status 204 No Content or confirmation message.
+*   **`/api/v1/skus/generate`** (Utility, possibly internal or for frontend suggestion):
+    *   Request: `{ "product_name": "T-Shirt", "variant_options": [{"option_name": "Size", "value":"S"}, {"option_name": "Color", "value":"Red"}], "business_shortcode": "MYBIZ" }`
+    *   Response: `{ "suggested_sku": "MYBIZ-TSHIRT-S-RD" }`
+*   **`/api/v1/skus/validate`**:
+    *   Request: `{ "sku": "TEST-SKU", "business_id": "current_business_id" }`
+    *   Response: `{ "is_valid_format": true, "is_unique": true, "reason": null }` or `{ "is_valid_format": true, "is_unique": false, "reason": "SKU already exists." }`
+*   **Authentication & Authorization:** All endpoints require authentication and are strictly scoped to the `business_id` of the authenticated user.
+*   **Error Handling:** Use standard HTTP status codes (400 for bad request/validation, 401/403 for auth, 404 for not found, 409 for conflict like duplicate SKU, 422 for unprocessable entity).
+*   **Rate Limiting:** Apply sensible rate limits, especially for creation/update endpoints.
+*   **Caching:** Product lists and individual product details can be cached (e.g., using ETag and If-None-Match headers, or server-side Redis cache).
+
+#### 6.3.7 Frontend Architecture
+*   **Component Hierarchy:**
+    *   `app/(app)/products/page.tsx` -> `components/products/ProductTable.tsx` (with filters, pagination controls).
+    *   `app/(app)/products/new/page.tsx` -> `components/products/ProductForm.tsx`.
+    *   `app/(app)/products/[productId]/edit/page.tsx` -> `components/products/ProductForm.tsx` (populated with existing product data).
+    *   `components/products/ProductForm.tsx`: Contains fields for basic product info and integrates:
+        *   `components/products/VariantManager.tsx`: For defining variant types (e.g., Size) and their options (e.g., S, M, L). Allows adding/removing types and options dynamically.
+        *   An "Inventory Items" section (could be `InventoryItemTable.tsx` or dynamic rows): Generated based on the Cartesian product of selected variant options. Each row allows editing SKU, price, stock for that specific combination.
+*   **Reusable Components:** `ProductTable.tsx`, `ProductForm.tsx`, `VariantManager.tsx`. Shadcn UI components for form elements, tables, dialogs.
+*   **State Management:**
+    *   React Hook Form for managing complex state of `ProductForm.tsx` including dynamic variant fields and inventory item rows.
+    *   SWR or React Query for data fetching (product lists, individual products) and mutations (create, update, delete products/inventory items). Handles caching, optimistic updates, and revalidation.
+*   **Routing and Navigation:** Next.js App Router as defined in file structure.
+*   **Responsive Design:**
+    *   `ProductTable.tsx` should adapt for smaller screens (e.g., hide less critical columns, allow horizontal scrolling, or switch to a card view).
+    *   `ProductForm.tsx` needs careful design for usability on smaller screens, possibly using modals or accordion sections for variant/inventory management.
+
+#### 6.3.8 Detailed CRUD Operations
+*   **Product (`products` table & related variant/option tables):**
+    *   **Create:** `POST /api/v1/products`.
+        *   **Transaction:** Entire operation (product, its variants, options, and initial inventory items) should be within a single database transaction.
+        *   **Validation Rules:** `name`, `base_price` required. `business_id` derived from authenticated user. Variant option names must be unique per product. Variant option values must be unique per variant type.
+        *   **Required Fields:** `name`, `base_price`.
+    *   **Read:**
+        *   `GET /api/v1/products`: Paginated, filterable, sortable list.
+        *   `GET /api/v1/products/{product_id}`: Single product with all details.
+    *   **Update:** `PUT /api/v1/products/{product_id}`.
+        *   **Transaction:** Complex updates (e.g., changing variant structure) should be transactional.
+        *   **Partial Updates:** Supported.
+        *   **Impact:** Updating variant structure might involve deleting old `inventory_items` and creating new ones. User should be warned if this is destructive.
+    *   **Delete:** `DELETE /api/v1/products/{product_id}`.
+        *   **Soft Delete:** Set `products.is_active = false`. Also set `inventory_items.is_active = false` for all associated inventory items. This preserves data for historical orders.
+*   **Inventory Item (`inventory_items` table - represents SKUs):**
+    *   **Create:** `POST /api/v1/products/{product_id}/inventory_items` (if adding to existing product) or as part of product creation.
+        *   **SKU Generation:** Auto-generate SKU if not provided by user, based on product name, variant values, and business prefix.
+        *   **SKU Validation:** Validate format and uniqueness within the business (via API call to `/api/v1/skus/validate` or DB constraint if `business_id` is on `inventory_items`).
+        *   **Required Fields:** `product_id`, `price`, `stock_quantity`. `variant_options_ids` (or equivalent JSON) to define the specific combination. `sku` (can be auto-generated).
+    *   **Read:**
+        *   Typically fetched as part of the parent product (`GET /api/v1/products/{product_id}`).
+        *   `GET /api/v1/inventory_items/{inventory_item_id}` for individual SKU details.
+    *   **Update:** `PUT /api/v1/inventory_items/{inventory_item_id}`.
+        *   Used to update `sku` (rarely, with careful validation), `price`, `stock_quantity`, `barcode`, `is_active`.
+        *   **Stock Updates:** Could have a dedicated endpoint like `POST /api/v1/inventory_items/{inventory_item_id}/adjust_stock` with request `{ "change": -2 }` or `{ "set_to": 50 }` for atomic updates. Ensure `stock_quantity` does not go below zero unless backorders are allowed (not for MVP).
+    *   **Delete:** `DELETE /api/v1/inventory_items/{inventory_item_id}`.
+        *   **Soft Delete:** Set `is_active = false`. Avoid hard delete if linked to past orders.
+
+#### 6.3.9 User Experience Flow (Add New Product with Variants)
+1.  User navigates to `/products` and clicks "Add New Product", routing to `/products/new`.
+2.  **Screen:** `ProductForm.tsx` is displayed.
+    *   **Section 1: Product Details:** Fields for Name, Description, Category (dropdown/tags), Base Price, Image Uploads.
+    *   **Section 2: Variants (`VariantManager.tsx`):**
+        *   Button: "+ Add Variant Type" (e.g., Size).
+        *   User clicks, inputs "Size".
+        *   Another input appears: "Enter option values for Size (e.g., Small, Medium, Large)". User types "S", "M", "L", possibly as tags or comma-separated.
+        *   User can click "+ Add Variant Type" again, inputs "Color", then option values "Red", "Blue".
+    *   **Section 3: Inventory & SKUs (Dynamic Table):**
+        *   As variant options are defined, a table automatically generates rows for each combination (S-Red, S-Blue, M-Red, M-Blue, L-Red, L-Blue).
+        *   Each row has inputs/displays for:
+            *   SKU: Auto-generated (e.g., `MYBIZ-PRODUCTNAME-S-RED`), editable. Validation icon shows uniqueness/format status on blur/change.
+            *   Price: Defaults to product `base_price`. Editable.
+            *   Stock Quantity: Input field.
+            *   Barcode: Optional input.
+3.  User fills in product name (e.g., "Cool Hoodie"). SKUs dynamically update (e.g., `MYBIZ-COOLHOODIE-S-RED`).
+4.  User adjusts prices/stock for specific variants if needed.
+5.  User clicks "Save Product".
+6.  **Frontend:**
+    *   Validation (React Hook Form). Inline errors shown if any (e.g., "Name is required", "SKU 'X' is already in use").
+    *   On successful validation, API call to `POST /api/v1/products` with the structured data.
+    *   Loading indicator shown.
+7.  **Backend:**
+    *   Receives data, performs server-side validation, SKU uniqueness check.
+    *   Creates records in `products`, `product_variants`, `product_variant_options`, `inventory_items` tables within a transaction.
+8.  **On Success:**
+    *   API returns 201 with created product data.
+    *   Frontend redirects to `/products` list, displays success toast/message. New product appears in the `ProductTable.tsx`.
+*   **Error Handling (User Perspective):** Clear, inline error messages on forms. Specific messages for SKU conflicts or format errors. General error message if API call fails.
+*   **Loading States:** Spinners/disabled state for "Save Product" button during submission. Skeleton loaders for product table/form while data is_loading.
+
+#### 6.3.10 Security Considerations
+*   **Authentication & Authorization:** All product-related APIs must be authenticated. Data access and modification strictly scoped by `business_id` linked to the authenticated user. Prevent users from accessing/modifying other businesses' products.
+*   **Data Validation:**
+    *   Backend: Rigorous validation for all fields: data types, required fields, string lengths, numeric ranges (prices/stock non-negative).
+    *   SKU uniqueness per business enforced at API level, ideally also with DB constraints if schema allows (`UNIQUE(business_id, sku)` on `inventory_items` if `business_id` is added there).
+    *   Sanitize all text inputs (name, description, category) to prevent XSS if these are ever rendered unescaped (though modern frontend frameworks usually handle this).
+*   **Input Sanitization:** Especially for fields like description that might allow rich text in the future. For MVP, treat as plain text and sanitize.
+*   **Access Control:** Ensure that API logic correctly filters by `business_id` in all database queries.
+
+#### 6.3.11 Testing Strategy
+*   **Unit Tests:**
+    *   Backend: SKU generation logic, SKU validation rules (format, uniqueness mock). Logic for creating product + variants + inventory items transactionally (mock DB calls).
+    *   Frontend: `ProductForm` validation logic. `VariantManager` state changes when adding/removing variants/options. Dynamic generation of inventory item rows and their state.
+*   **Integration Tests:**
+    *   Full CRUD API endpoint testing for `/products` and `/inventory_items` against a test database.
+    *   Test SKU uniqueness constraint by attempting to create duplicate SKUs for the same business.
+    *   Test transactional integrity: if part of product creation fails (e.g., invalid inventory item), the entire product should not be created.
+*   **End-to-End Tests (Playwright/Cypress):**
+    *   Full flow: User logs in, navigates to products, adds a new product with multiple variants and specific SKU details. Verifies product appears in list.
+    *   Edits an existing product (details, stock, price of a variant). Verifies changes.
+    *   Deletes a product and verifies it's (soft) deleted.
+    *   Test form validation by submitting invalid data.
+
+#### 6.3.12 Data Management
+*   **Data Integrity:**
+    *   Foreign key constraints between tables (`products`, `product_variants`, `product_variant_options`, `inventory_items`).
+    *   Use database transactions for complex operations like creating/updating a product with its variants and inventory items to ensure atomicity.
+*   **SKU Uniqueness:** Enforced at application level (API validation against `business_id`) and potentially DB level if `business_id` is on `inventory_items` with a unique constraint.
+*   **Performance:**
+    *   Proper indexing on tables for common query patterns (filtering by `business_id`, `category`, searching by `name`, looking up by `sku`).
+    *   Pagination for product lists (`GET /api/v1/products`).
+    *   Consider denormalizing total stock onto `products` table if frequently needed and calculations are slow, update via triggers (can add complexity). For MVP, calculate on-the-fly or join.
+*   **Stock Atomicity:** Stock updates (especially decrements due to sales in the future) must be atomic operations (e.g., `UPDATE inventory_items SET stock_quantity = stock_quantity - :amount WHERE id = :id AND stock_quantity >= :amount`).
+*   **Image Handling:** `images_urls` stores URLs. Actual image files would be uploaded to a service like Supabase Storage, AWS S3, or Cloudinary. The API would handle the upload and then store the URL. For MVP, URLs could be externally hosted.
+
+#### 6.3.13 Error Handling & Logging
+*   **Frontend:**
+    *   Clear, user-friendly error messages for form validation (e.g., "SKU format is invalid", "Price must be a positive number", "This SKU is already in use for another product.").
+    *   Toast notifications for success/failure of save operations.
+*   **Backend:**
+    *   Return appropriate HTTP status codes:
+        *   400 Bad Request / 422 Unprocessable Entity for validation errors (include detailed error messages in response body).
+        *   409 Conflict if trying to create a resource that already exists (e.g., duplicate SKU).
+    *   Log all CRUD operations on products/inventory items with `business_id`, `user_id`, and key data points.
+    *   Log any errors during transactional operations.
+*   **Monitoring:**
+    *   Track number of products and inventory items per business.
+    *   Monitor error rates for product creation/update APIs.
+    *   (Future) Alert on critically low stock for popular items if such a feature is built.
+
+### 6.4 Conversations (Smart Auto-Responder)
+
+**Feature Goal:** An intelligent conversation management system that handles inbound social media inquiries using AI-powered responses based on product catalogs and business context. The system automatically responds to customer queries about products, pricing, and availability while escalating complex inquiries to human operators when needed.
+
+#### 6.4.1 Functional Requirements
+*   Webhook ingestion for Instagram Direct Messages (DMs) and WhatsApp Business messages.
+*   Secure parsing of incoming messages (sender ID, content, timestamp, media attachments if any).
+*   AI agent capabilities:
+    *   Intent recognition (e.g., product query, pricing inquiry, availability check, general question, complaint).
+    *   Entity extraction (e.g., SKUs, product names, quantities).
+    *   Retrieve product data (price, stock, description) from `inventory_items` and `products` tables based on extracted entities.
+    *   Retrieve relevant business context from `business_context_embeddings` (e.g., return policy, opening hours).
+    *   Generate contextually appropriate and natural-sounding responses.
+*   Confidence scoring for AI-generated responses.
+*   Automated sending of AI responses via the respective social media platform APIs if confidence score is above a defined threshold.
+*   Escalation mechanism for low-confidence AI responses or specific triggers (e.g., negative sentiment, complex queries):
+    *   Send an automated holding message to the customer (e.g., "Thanks for your message! Let me connect you with a team member.").
+    *   Flag the conversation in the CHIDI dashboard for human review.
+    *   Notify the business owner/operator (in-app notification via WebSockets, email notification via SendGrid - as per Step 9 of original doc, means Notification Service).
+*   Conversation management dashboard for business users:
+    *   List all ongoing and past conversations.
+    *   Filter conversations by status (e.g., `automated`, `active_ai`, `escalated_human_needed`, `active_human`, `resolved`, `archived`), platform, customer.
+    *   View full chat history for each conversation (customer messages, AI messages, human messages).
+    *   Provide an interface for human operators to take over, send messages, and manage the conversation.
+*   Real-time updates on the dashboard (new messages, status changes) using WebSockets.
+*   Persistent storage of all conversation history, including AI interactions and human interventions.
+*   Basic SKU monitoring in captions: This feature is described as "Manual Action + SKU Monitoring Agent" in the overview. For MVP, this might mean the AI service, when processing messages, also looks for SKUs mentioned by customers that might refer to products seen in posts/captions. The primary focus is responding to DMs. A separate agent scanning public posts is a larger scope; for MVP, AI leverages product knowledge from DMs. If a customer DM refers to a SKU they saw, AI uses that.
+
+#### 6.4.2 Non-Functional Requirements
+*   **Performance:**
+    *   Webhook Acknowledgment: Respond to platform webhooks within specified time limits (e.g., < 2 seconds) to prevent retries/disabling. Processing can be asynchronous.
+    *   AI Response Time: End-to-end time from customer message receipt to AI response sent should be quick for a good UX (e.g., < 5-10 seconds for simple queries).
+    *   Dashboard Load Time: Conversation list and chat history should load quickly.
+*   **Reliability:**
+    *   High uptime for webhook ingestion and message processing. No lost messages.
+    *   Reliable delivery of responses to social media platforms.
+    *   Graceful degradation if AI service (OpenAI) is temporarily unavailable (e.g., escalate immediately, inform user).
+*   **Scalability:** Handle increasing volume of messages, conversations, and connected social accounts. Celery workers should scale.
+*   **Accuracy:** High accuracy in intent recognition, entity extraction, and information retrieval by AI. AI responses must be factually correct based on business data.
+*   **Security:** Secure handling of social media access tokens and customer data.
+*   **Usability (Dashboard):** Intuitive interface for managing conversations and taking over from AI.
+
+#### 6.4.3 User Interface Requirements
+*   **Dashboard Pages/Sections:**
+    *   `/conversations`: Main conversation management view.
+        *   List area: Displays conversations, filterable, sortable. Each item shows customer name, last message snippet, timestamp, platform icon, status.
+        *   Chat area: When a conversation is selected, displays its full history and a message input box for human operators.
+    *   `/settings/integrations`: Page for connecting/managing Instagram and WhatsApp accounts (OAuth flow or token input).
+*   **Components:**
+    *   `ConversationList.tsx`: Renders the list of conversations.
+    *   `ConversationListItem.tsx`: Individual item in the list.
+    *   `ChatInterface.tsx`: Displays messages (`Message.tsx` component for each), provides text input, send button, potentially quick reply buttons or attachment options.
+    *   `Message.tsx`: Styles messages differently for customer, AI, and business human.
+*   **Mockups/Wireframes:** (To be provided by Design Team).
+    *   Typical multi-pane chat application layout.
+    *   Clear visual distinction for escalated conversations.
+    *   Notification indicators for new messages or escalations.
+*   **Responsiveness:** Dashboard should be primarily desktop-focused for efficient management but viewable on tablets. Mobile view might be simplified for quick checks.
+
+#### 6.4.4 API Specifications
+*   Social Media Platforms (Instagram Graph API, WhatsApp Business API) <-> FastAPI Backend (Webhook endpoints for receiving messages, API clients for sending messages).
+*   FastAPI Backend (Webhook handler) -> Celery Worker (`message_processing_tasks.py`, `ai_response_tasks.py`).
+*   Celery Worker (AI Service - `ai_service.py`) <-> OpenAI API (for NLP, response generation).
+*   Celery Worker -> Supabase DB (Store messages, conversations; update status).
+*   Celery Worker -> Social Media Platform APIs (to send AI or human responses).
+*   FastAPI Backend (WebSockets - `connection_manager.py`, `event_handlers.py`) <-> Frontend Dashboard (for real-time updates).
+
+#### 6.4.5 Database Schema Design
+*   **`social_connections` table (PostgreSQL):**
+    *   `id` (UUID, Primary Key)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`, Not Null)
+    *   `platform` (ENUM('instagram', 'whatsapp'), Not Null) - Define ENUM type: `CREATE TYPE social_platform_type AS ENUM ('instagram', 'whatsapp');`
+    *   `platform_account_id` (TEXT, Not Null - e.g., Instagram Page ID, WhatsApp Business Account (WABA) ID)
+    *   `platform_page_access_token` (TEXT, Encrypted, Nullable - long-lived token for Instagram)
+    *   `whatsapp_phone_number_id` (TEXT, Nullable - specific to WhatsApp)
+    *   `is_active` (BOOLEAN, Default TRUE, Not Null)
+    *   `permissions` (JSONB, Nullable - e.g., `{"messages": true, "feed": false}`)
+    *   `last_webhook_status` (TEXT, Nullable - e.g., "active", "failed_verification")
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   UNIQUE (`business_id`, `platform`, `platform_account_id`)
+    *   *Indexing Strategy:* PK on `id`, Unique index, Index on `business_id`.
+    *   *Foreign Key:* `business_id` references `businesses.id` ON DELETE CASCADE.
+*   **`conversations` table (PostgreSQL):**
+    *   `id` (UUID, Primary Key)
+    *   `business_id` (UUID, Foreign Key to `businesses.id`, Not Null)
+    *   `social_connection_id` (UUID, Foreign Key to `social_connections.id`, Not Null)
+    *   `customer_platform_id` (TEXT, Not Null - e.g., Instagram User ID (ASID/PSID), WhatsApp phone number of customer)
+    *   `customer_name` (TEXT, Nullable - fetched from platform if available)
+    *   `customer_avatar_url` (TEXT, Nullable)
+    *   `status` (ENUM('active_ai', 'escalated_human_needed', 'active_human', 'resolved_by_ai', 'resolved_by_human', 'archived'), Not Null, Default 'active_ai', Indexed) - Define ENUM type.
+    *   `last_message_at` (TIMESTAMPZ, Indexed, Not Null)
+    *   `last_message_snippet` (TEXT, Nullable)
+    *   `assigned_to_user_id` (UUID, Nullable, Foreign Key to `public.users.id` - for future multi-agent support)
+    *   `ai_confidence_score_last` (FLOAT, Nullable - confidence of the last AI action/response)
+    *   `tags` (ARRAY of TEXT, Nullable)
+    *   `notes` (TEXT, Nullable - internal notes by business user)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   `updated_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Index on (`business_id`, `status`, `last_message_at` DESC), Index on (`social_connection_id`, `customer_platform_id`).
+    *   *Foreign Keys:* `business_id` references `businesses.id` ON DELETE CASCADE. `social_connection_id` references `social_connections.id` ON DELETE CASCADE. `assigned_to_user_id` references `users.id` ON DELETE SET NULL.
+*   **`messages` table (PostgreSQL):**
+    *   `id` (UUID, Primary Key)
+    *   `conversation_id` (UUID, Foreign Key to `conversations.id`, Not Null)
+    *   `platform_message_id` (TEXT, Nullable, Unique - ID from Instagram/WhatsApp, if available)
+    *   `sender_type` (ENUM('customer', 'ai_bot', 'business_human'), Not Null) - Define ENUM type.
+    *   `content_type` (ENUM('text', 'image', 'audio', 'video', 'file', 'sticker', 'unsupported'), Default 'text', Not Null) - Define ENUM type.
+    *   `text_content` (TEXT, Nullable)
+    *   `media_url` (TEXT, Nullable - URL if content is media)
+    *   `media_mime_type` (TEXT, Nullable)
+    *   `ai_processing_log_id` (UUID, Nullable, Foreign Key to `ai_responses_log.id` - links AI message to its generation log)
+    *   `platform_timestamp` (TIMESTAMPZ, Not Null - when message was sent/received on the social platform)
+    *   `created_at` (TIMESTAMPZ, Default NOW(), Indexed)
+    *   *Indexing Strategy:* PK on `id`, Index on (`conversation_id`, `platform_timestamp` DESC), Index on `platform_message_id`.
+    *   *Foreign Keys:* `conversation_id` references `conversations.id` ON DELETE CASCADE. `ai_processing_log_id` references `ai_responses_log.id` ON DELETE SET NULL.
+*   **`ai_responses_log` table (PostgreSQL):** (As per Q&A in input)
+    *   `id` (UUID, Primary Key)
+    *   `conversation_id` (UUID, Foreign Key to `conversations.id`, Not Null)
+    *   `incoming_message_id` (UUID, Nullable, Foreign Key to `messages.id` - the customer message AI is responding to)
+    *   `generated_message_id` (UUID, Nullable, Foreign Key to `messages.id` - the AI's response message)
+    *   `prompt_template_used` (TEXT, Nullable)
+    *   `final_prompt_sent_to_llm` (TEXT, Not Null)
+    *   `llm_raw_response` (TEXT, Nullable)
+    *   `parsed_response_text` (TEXT, Nullable - the actual text content sent or intended to be sent)
+    *   `retrieved_context_snippets` (JSONB, Nullable - e.g., product info, business policy chunks)
+    *   `detected_intent` (TEXT, Nullable)
+    *   `extracted_entities` (JSONB, Nullable)
+    *   `confidence_score` (FLOAT, Nullable)
+    *   `action_taken` (ENUM('responded_auto', 'escalated', 'error_occurred', 'holding_message_sent'), Nullable) - Define ENUM type.
+    *   `error_details` (TEXT, Nullable)
+    *   `processing_time_ms` (INTEGER, Nullable)
+    *   `created_at` (TIMESTAMPZ, Default NOW())
+    *   *Indexing Strategy:* PK on `id`, Index on `conversation_id`, Index on `action_taken`.
+    *   *Foreign Keys:* `conversation_id` references `conversations.id` ON DELETE CASCADE. `incoming_message_id` and `generated_message_id` reference `messages.id` ON DELETE SET NULL.
+*   **Migration/Versioning:** Prisma for PostgreSQL schemas. ENUM types need careful handling in migrations (create them first or use `CREATE TYPE IF NOT EXISTS`).
+
+#### 6.4.6 Comprehensive API Design (FastAPI)
+*   **Webhook Endpoints (Ingestion):**
+    *   `POST /api/v1/webhooks/instagram/{unique_business_identifier}`: Receives Instagram DM webhooks.
+    *   `GET /api/v1/webhooks/instagram/{unique_business_identifier}`: For Instagram webhook verification.
+    *   `POST /api/v1/webhooks/whatsapp/{unique_business_identifier}`: Receives WhatsApp Business webhooks.
+    *   `GET /api/v1/webhooks/whatsapp/{unique_business_identifier}`: For WhatsApp webhook verification.
+        *   `unique_business_identifier`: A token or ID that maps to a `business_id` or `social_connection_id` for secure routing.
+        *   **Request Handling:**
+            1.  Authenticate webhook (verify signature from `X-Hub-Signature-256` for Instagram, or WhatsApp signature; validate `hub.verify_token` for GET).
+            2.  Parse payload to extract messages, sender info, timestamps.
+            3.  Identify `business_id` and `social_connection_id`.
+            4.  Find or create `conversation` record.
+            5.  Create `message` record(s) in DB (persist raw event to a staging table first for resilience).
+            6.  Enqueue Celery task (`message_processing_tasks.py:process_incoming_message`) with `message_id` or `conversation_id`.
+            7.  Respond 200 OK to the platform quickly.
+*   **Frontend Dashboard APIs (for conversation management):**
+    *   `GET /api/v1/conversations`: List conversations for the authenticated user's business.
+        *   Query Params: `status` (enum), `platform` (enum), `page` (int), `limit` (int), `sort_by` (e.g., `last_message_at`), `order` (`asc`/`desc`), `search_term` (for customer name/message content).
+        *   Response: Paginated list of `ConversationObject` (includes last message snippet, customer info, status).
+    *   `GET /api/v1/conversations/{conversation_id}/messages`: Get messages for a specific conversation.
+        *   Query Params: `before_message_id` or `after_message_id` (for pagination/infinite scroll), `limit` (int).
+        *   Response: List of `MessageObject`, sorted by timestamp.
+    *   `POST /api/v1/conversations/{conversation_id}/messages`: Business user sends a message manually from the dashboard.
+        *   Request: `{ "text_content": "Hello from the business!", "content_type": "text" }` (future: attachments).
+        *   Action:
+            1.  Save message to DB (`sender_type='business_human'`).
+            2.  Enqueue Celery task (`outbound_message_tasks.py:send_platform_message`) to send via social media API.
+            3.  Update `conversation.last_message_at`, `conversation.status` (e.g., to `active_human`).
+            4.  Broadcast new message via WebSocket to all connected dashboard clients for this business.
+        *   Response: Created `MessageObject` (Status 201).
+    *   `PUT /api/v1/conversations/{conversation_id}/status`: Manually update conversation status (e.g., resolve, archive, assign).
+        *   Request: `{ "status": "resolved_by_human", "assigned_to_user_id": "uuid_if_reassigning" }`
+        *   Response: Updated `ConversationObject`.
+    *   `POST /api/v1/conversations/{conversation_id}/notes`: Add/update internal notes for a conversation.
+        *   Request: `{ "notes": "Customer interested in bulk discount." }`
+        *   Response: Updated `ConversationObject`.
+*   **Social Connection APIs (for settings/integrations page):**
+    *   `POST /api/v1/social_connections/instagram/initiate_oauth`: Redirects user to Instagram OAuth flow.
+    *   `GET /api/v1/social_connections/instagram/callback`: Handles OAuth callback from Instagram, exchanges code for token, creates `social_connections` record.
+    *   `POST /api/v1/social_connections/whatsapp`: For configuring WhatsApp Business API (details depend on chosen WABA provider integration).
+    *   `GET /api/v1/social_connections`: List active social connections for the business.
+    *   `DELETE /api/v1/social_connections/{connection_id}`: Disconnect a social account.
+*   **WebSocket Endpoint: `ws /api/v1/conversations/ws`** (or `ws /ws/business/{business_id}`):
+    *   Authentication: Client sends JWT on connection. Server validates and maps connection to `business_id`.
+    *   Server -> Client Events:
+        *   `new_message`: `{ "conversation_id": "uuid", "message": MessageObject }`
+        *   `conversation_updated`: `{ "conversation": ConversationObject }` (for status changes, new assignment, etc.)
+        *   `new_conversation`: `{ "conversation": ConversationObject }`
+        *   `notification`: `{ "type": "escalation", "message": "Conversation XYZ needs attention", "conversation_id": "uuid" }`
+*   **Error Handling:** Consistent JSON error responses. Detailed logging.
+*   **Rate Limiting:** Applied to dashboard APIs and outbound message sending tasks. Respect platform rate limits.
+*   **Caching:** Cache social connection details, business context if frequently accessed by message processors.
+
+#### 6.4.7 Frontend Architecture (Dashboard part)
+*   **Component Hierarchy:**
+    *   `app/(app)/conversations/layout.tsx`: Main layout for conversation management, possibly a two-pane or three-pane structure.
+    *   `app/(app)/conversations/page.tsx` (or `[conversationId]/page.tsx` for selection):
+        *   `components/conversations/ConversationList.tsx`: Displays filterable/sortable list of conversations. Uses `ConversationListItem.tsx`.
+        *   `components/conversations/ChatInterface.tsx`: Selected conversation's messages are displayed using `Message.tsx`. Includes input field for human operator.
+        *   `components/conversations/ConversationDetailPanel.tsx`: (Optional third pane) Shows customer info, tags, notes, history for the selected conversation.
+    *   `app/(app)/settings/integrations/page.tsx`: UI for connecting/managing social media accounts.
+*   **Reusable Components:** `ConversationListItem.tsx`, `Message.tsx`, `ChatInterface.tsx` (could be adapted from workspace chat).
+*   **State Management:**
+    *   SWR/React Query for fetching conversation lists, message history, and for mutations (sending messages, updating status). Optimistic updates for sent messages.
+    *   Global state (Zustand/Recoil/Context) for WebSocket connection status, managing real-time event handlers, and perhaps a local cache of active conversations.
+*   **Routing and Navigation:**
+    *   `/conversations` shows the list, potentially with the first/most recent conversation selected.
+    *   `/conversations/[conversationId]` directly loads a specific conversation. Client-side routing updates the selected chat without full page reload.
+*   **Real-time:** WebSocket client initialized and managed. Event handlers update SWR/React Query cache or global state, triggering UI re-renders.
+*   **Responsive Design:** Primarily designed for desktop for efficient agent work. Tablet support is important. Mobile view might be read-only or offer limited interaction for on-the-go checks.
+
+#### 6.4.8 Detailed CRUD Operations
+*   **SocialConnection:**
+    *   **Create:** Via OAuth flow (Instagram) or setup form (WhatsApp) on the `/settings/integrations` page, calling backend APIs like `POST /api/v1/social_connections/...`.
+    *   **Read:** `GET /api/v1/social_connections` to list for the business.
+    *   **Update:** Token refresh (often handled by platform SDKs or backend logic periodically). `is_active` can be toggled.
+    *   **Delete:** `DELETE /api/v1/social_connections/{connection_id}` to disconnect an account. This should also stop webhook processing for it.
+*   **Conversation:**
+    *   **Create:** Automatically by the webhook handler when a new customer initiates a chat or an existing customer sends a new message after a long pause (logic to define "new" conversation needed).
+    *   **Read:** `GET /api/v1/conversations`, `GET /api/v1/conversations/{conversation_id}/messages`.
+    *   **Update:** `status`, `last_message_at`, `last_message_snippet`, `assigned_to_user_id`, `tags`, `notes` are updated by:
+        *   Incoming messages (webhook handler).
+        *   AI processing tasks (Celery).
+        *   Human operator actions via `PUT /api/v1/conversations/{conversation_id}/status` or `POST /.../notes`.
+    *   **Delete:** Archiving (`status='archived'`) is the primary mechanism. Hard delete might be for GDPR compliance via a separate admin process.
+*   **Message:**
+    *   **Create:**
+        *   Customer messages: By webhook handler.
+        *   AI messages: By AI response Celery task.
+        *   Human messages: By `POST /api/v1/conversations/{conversation_id}/messages`.
+        *   All creations involve an `INSERT` into `messages` table.
+    *   **Read:** `GET /api/v1/conversations/{conversation_id}/messages` (paginated).
+    *   **Update/Delete:** Generally not allowed to maintain audit trail. Message edits/deletions on social platforms might send webhooks; MVP might ignore these or just log them.
+*   **AIResponsesLog:**
+    *   **Create:** By AI processing Celery task after every significant AI operation (attempting to respond, deciding to escalate).
+    *   **Read:** Primarily for internal debugging/analytics. No direct user-facing API for MVP.
+    *   **Update/Delete:** Not applicable. These are immutable logs.
+
+#### 6.4.9 User Experience Flow (Automated Response & Escalation Example)
+1.  **Customer DM:** Customer sends "Hi, do you have SKU123 in blue?" to the business's Instagram page.
+2.  **Webhook to CHIDI:** Instagram sends a webhook to `POST /api/v1/webhooks/instagram/...`.
+    *   FastAPI authenticates, parses, saves raw event, creates `message` (sender: customer, content: "Hi, do you have SKU123 in blue?"), finds/creates `conversation`, and queues `process_incoming_message` Celery task. Responds 200 OK to Instagram.
+3.  **Celery Task (`message_processing_tasks.py` calls `ai_service.py`):**
+    a.  Retrieves message, conversation, business context (from `businesses` embeddings), product catalog (`products`, `inventory_items`).
+    b.  **AI Analysis (OpenAI via `ai_service.py`):**
+        *   Intent: "product_availability_query".
+        *   Entities: `SKU: "SKU123"`, `Attribute: "color", Value: "blue"`.
+    c.  **Information Retrieval:**
+        *   Queries `inventory_items` for `sku='SKU123'` AND `variant_options` containing "blue". Finds "Cool T-Shirt - Blue" (SKU123-BL), Price "$25", Stock "5".
+    d.  **Response Generation (AI):** "Hi there! Yes, the Cool T-Shirt in Blue (SKU123-BL) is $25 and we have 5 in stock. Would you like to order or know more?"
+    e.  **Confidence Scoring:** High (e.g., 0.95) because SKU was found, stock is clear.
+    f.  **Action:** AI decides to respond automatically.
+    g.  Celery task enqueues another task (`outbound_message_tasks.py:send_platform_message`) to send the AI-generated response via Instagram API.
+    h.  Saves AI message to `messages` table (`sender_type='ai_bot'`). Updates `conversation.status='active_ai'`, `last_message_at`, etc. Logs details to `ai_responses_log`.
+    i.  Broadcasts `new_message` and `conversation_updated` events via WebSocket to the business dashboard.
+4.  **Escalation Scenario:** Customer asks, "I want a refund for my last order, it was terrible!"
+    a.  Webhook -> Celery task as above.
+    b.  **AI Analysis:**
+        *   Intent: "complaint_refund_request".
+        *   Sentiment: Negative.
+    c.  **AI Decision Logic:** Based on rules/prompting (e.g., "always escalate complaints or refund requests"), AI decides this needs human attention. Confidence for auto-reply is low (e.g., 0.2).
+    d.  **Action:** Escalate.
+    e.  AI generates a holding message: "I understand this is important. Let me get a team member to look into this for you right away. They'll respond here shortly."
+    f.  Celery task sends holding message via Instagram API.
+    g.  Updates `conversation.status='escalated_human_needed'`. Saves AI (holding) message. Logs to `ai_responses_log`.
+    h.  Triggers notification:
+        *   Broadcasts `conversation_updated` (with new status) and `notification` (type: escalation) via WebSocket.
+        *   (Via `notification_service.py`) Enqueues task to send an email alert to the business owner.
+5.  **Business Dashboard (`frontend/app/(app)/conversations`):**
+    *   User sees the conversation list. The escalated chat is highlighted or appears in an "Escalated" filter.
+    *   In-app notification (toast or badge) appears.
+    *   User clicks the conversation. `ChatInterface.tsx` shows history: customer's complaint, AI's holding message.
+    *   User types a reply ("So sorry to hear that! Could you please provide your order number?"), clicks "Send".
+    *   Frontend calls `POST /api/v1/conversations/{conversation_id}/messages`.
+    *   Backend saves human message, queues task to send it via Instagram, updates conversation status to `active_human`, broadcasts WebSocket updates.
+
+#### 6.4.10 Security Considerations
+*   **Webhook Security:**
+    *   Instagram: Verify `X-Hub-Signature-256` header.
+    *   WhatsApp: Verify signature (method depends on WABA provider).
+    *   Use unique, hard-to-guess tokens in webhook URLs (`unique_business_identifier`).
+    *   Process webhooks over HTTPS.
+*   **API Keys & Access Tokens:**
+    *   Store social media platform access tokens (e.g., Instagram Page Access Token, WhatsApp tokens) securely encrypted at rest (e.g., Supabase Vault, HashiCorp Vault, or application-level encryption using a strong key).
+    *   Scoped permissions: Request only necessary permissions when connecting social accounts.
+*   **Data Privacy (Customer Data):**
+    *   Comply with platform policies (Instagram, WhatsApp) and data privacy regulations (GDPR, CCPA, etc.).
+    *   Be transparent with users about AI interaction.
+    *   Anonymize or pseudonymize data if used for AI model training/fine-tuning (not for MVP's direct OpenAI usage, but for future).
+    *   Securely handle PII within messages. Log PII carefully (e.g., avoid logging full message content in general purpose logs if possible, use `ai_responses_log` for specific AI debugging with appropriate access controls).
+*   **Rate Limiting:**
+    *   Adhere to API rate limits of Instagram and WhatsApp when sending messages or making other API calls. Implement queues and throttling in Celery workers.
+    *   Rate limit CHIDI's own dashboard APIs.
+*   **AI Safety & Responsible AI:**
+    *   Use OpenAI's content moderation APIs to filter harmful inputs/outputs if necessary.
+    *   Design AI prompts to be helpful, harmless, and honest.
+    *   Provide clear indication when user is interacting with AI vs. human.
+    *   Avoid making decisions with significant impact solely based on AI without human oversight where appropriate (e.g., financial transactions, account closures).
+
+#### 6.4.11 Testing Strategy
+*   **Unit Tests:**
+    *   Backend: Webhook signature verification logic. Message parsing for different platforms/formats. SKU/entity extraction logic from text. AI prompt generation. Confidence scoring rules. Celery task logic (mocking external APIs like OpenAI, social platforms).
+    *   Frontend: `ChatInterface.tsx` rendering, message sending. `ConversationList.tsx` filtering/sorting. WebSocket event handling and UI updates.
+*   **Integration Tests:**
+    *   Webhook endpoint -> Celery task -> AI service (mocked OpenAI, mocked social APIs) -> DB updates (message stored, conversation status updated).
+    *   Full loop from dashboard: Frontend sends message -> Backend API -> Celery task (mocked social API) -> WebSocket update -> Frontend UI reflects sent message.
+    *   Test connection/disconnection of social accounts.
+*   **End-to-End Tests:**
+    *   Challenging due to reliance on external platforms.
+    *   Use test accounts on Instagram/WhatsApp if possible.
+    *   Develop mock social media platform servers that can simulate webhook calls and API responses for automated E2E testing.
+    *   Manually test the full flow: send DM from test social account -> verify CHIDI receives it -> AI responds or escalates -> verify response on social account / notification in CHIDI dashboard -> human takes over from dashboard -> verify reply on social account.
+*   **Performance Testing (Load Testing):**
+    *   Simulate high volume of incoming webhooks to test ingestion pipeline (FastAPI, Celery, Redis).
+    *   Measure message processing throughput of Celery workers.
+    *   Test database performance under load (concurrent writes to `messages`/`conversations`, reads for dashboard).
+    *   Target webhook acknowledgement latency (<2s). Target AI response latency.
+*   **AI Quality Testing:**
+    *   Develop a "golden dataset" of common customer queries and expected AI responses/actions (respond, escalate, information to retrieve).
+    *   Measure NLU accuracy (intent recognition, entity extraction) - target >85% for common product-related queries.
+    *   Measure response relevance and factual correctness.
+    *   Track escalation rate: desired balance between automation and necessary human intervention.
+    *   Regularly review a sample of AI interactions from `ai_responses_log` to identify areas for improvement in prompts or logic.
+
+#### 6.4.12 Data Management
+*   **Message Storage:** `messages` table can grow very large.
+    *   Ensure efficient indexing (`conversation_id`, `platform_timestamp`).
+    *   Future: Consider partitioning `messages` table by `conversation_id` hash or `created_at` range.
+*   **Conversation Archival:** Implement policy/feature for auto-archiving inactive conversations (e.g., no new messages for 30 days and status is `resolved`).
+*   **Real-time Data:** WebSockets for low-latency updates on dashboard. Ensure WebSocket server can handle many concurrent connections (FastAPI's Uvicorn with WebSockets is efficient).
+*   **Caching:**
+    *   Product data and business context frequently accessed by AI service should be cached (e.g., in Redis with TTL) to reduce DB load and latency.
+    *   Social connection details.
+*   **Data Retention Policies:** Define how long conversation data (messages, logs) is stored, considering platform policies, legal requirements, and storage costs. For MVP, retain indefinitely.
+*   **Backup and Recovery:** Rely on Supabase's built-in backup/recovery for PostgreSQL database.
+
+#### 6.4.13 Error Handling & Logging
+*   **Webhook Handlers:**
+    *   Robust error handling for parsing, authentication.
+    *   Log all incoming webhook payloads (at least IDs and types, or full payload to a secure/temporary log if debugging).
+    *   If webhook processing fails before queuing to Celery (e.g., DB error saving initial message), respond with 5xx to platform so it retries.
+*   **Celery Tasks (Message Processing, AI, Outbound):**
+    *   Implement retries with exponential backoff for transient errors (e.g., network issues calling OpenAI or social APIs).
+    *   Log detailed errors, including stack traces and relevant IDs (`message_id`, `conversation_id`, `business_id`).
+    *   Dead-letter queue for tasks that fail repeatedly.
+*   **AI Service (`ai_service.py`):**
+    *   Log OpenAI API errors, timeouts, content moderation flags.
+    *   Implement fallbacks if AI service is down (e.g., escalate immediately, send generic holding message).
+    *   Log all prompts sent to LLM and raw responses received in `ai_responses_log` for audit and debugging.
+*   **Social API Calls (Outbound):**
+    *   Log errors from Instagram/WhatsApp APIs (e.g., auth failure, rate limit exceeded, invalid recipient ID).
+    *   Handle specific error codes from platforms to update `social_connections` (e.g., token revoked) or notify business owner.
+*   **Structured Logging:** All significant events in the message lifecycle should be logged with consistent structured data (JSON format) including relevant IDs, timestamps, service names. Ship logs to a central logging system.
+*   **Monitoring:**
+    *   (Links to Feature 6.5) Track message processing times (end-to-end, AI step).
+    *   Monitor AI response rates vs. escalation rates.
+    *   Track API error rates for OpenAI and social platforms.
+    *   Alert on high Celery queue lengths or task failure rates.
+
+### 6.5 Monitoring & Alerting
+
+**Feature Goal:** Track platform health, user errors, and AI fallback scenarios to ensure system reliability and proactive issue resolution. This is primarily an internal/dev-focused feature.
+
+#### 6.5.1 Functional Requirements
+*   Centralized request logging for all FastAPI API calls (middleware providing method, path, status code, processing time, user ID if authenticated).
+*   Automated error tracking and aggregation for backend exceptions (Python/FastAPI) using Sentry.
+*   Automated error tracking and aggregation for frontend exceptions (JavaScript/Next.js) using Sentry.
+*   Product analytics: Track key user actions and events on both frontend and backend (e.g., user signed up, product created, message sent, AI escalated) using PostHog.
+*   Alerting mechanism for critical operational issues, including (but not limited to):
+    *   High rate of failed social media API calls (e.g., repeated auth failures, rate limits being hit).
+    *   OpenAI API errors or timeouts exceeding a threshold.
+    *   Consistent AI response failures or very low confidence scores across many interactions.
+    *   High Celery task failure rate or significant queue delays (e.g., `message_processing_tasks` queue length too high).
+    *   Database connection issues or high query latency.
+    *   Application error rate (5xx) exceeding a threshold.
+*   Logging of failed AI responses with comprehensive metadata (input prompt, specific error, timestamp, `conversation_id`) in `ai_responses_log` table and potentially to Sentry if it's an unexpected system error.
+*   Capability to track and analyze time-to-resolve for escalated customer queries (metric derived from `conversations` table status changes and timestamps).
+*   Capture and log retry attempts and final failure status for critical external API calls (e.g., sending messages to social platforms, OpenAI calls).
+
+#### 6.5.2 Non-Functional Requirements
+*   **Timeliness:** Alerts for critical issues should be near real-time.
+*   **Actionability:** Alerts must provide enough context for developers to start diagnosing the issue.
+*   **Low Overhead:** Monitoring and logging should have minimal performance impact on the application.
+*   **Reliability:** The monitoring and alerting system itself must be reliable.
+*   **Scalability:** Logging and metrics ingestion should scale with application traffic.
+*   **Configurability:** Alerting thresholds should be configurable.
+
+#### 6.5.3 User Interface Requirements
+*   This feature does not have direct user-facing UI within the CHIDI application itself.
+*   Interfaces are provided by third-party tools:
+    *   **Sentry Dashboard:** For viewing error reports, trends, stack traces.
+    *   **PostHog Dashboard:** For viewing product analytics, funnels, user cohorts, event streams.
+    *   **Log Management System UI (e.g., Grafana Loki, Kibana, Datadog Logs):** For searching, filtering, and analyzing structured logs.
+    *   **Alerting Platform UI (e.g., Sentry Alerts, PagerDuty, Opsgenie):** For managing alert rules and notifications.
+
+#### 6.5.4 API Specifications
+*   No user-facing CHIDI APIs for this feature.
+*   Integration is via SDKs provided by Sentry, PostHog, and logging libraries.
+    *   **Sentry SDK:** `sentry_sdk.capture_exception(e)`, `sentry_sdk.capture_message(msg)`, `sentry_sdk.set_user()`, `sentry_sdk.set_tag()`.
+    *   **PostHog SDK:** `posthog.capture(user_id, event_name, properties={...})`, `posthog.identify()`.
+*   FastAPI middleware for structured request logging.
+
+#### 6.5.5 Database Schema Design
+*   No new CHIDI database tables are created specifically for this feature.
+*   Data is stored externally in Sentry, PostHog, and the chosen log aggregation system.
+*   The `ai_responses_log` table (defined in Conversations 6.4.5) serves as a critical data source for monitoring AI performance and failures.
+*   Metrics like "time to resolve escalated queries" are derived by querying existing tables (e.g., `conversations` table for timestamps of status changes from `escalated_human_needed` to `active_human` or `resolved_by_human`).
+
+#### 6.5.6 Comprehensive API Design
+*   Not applicable in terms of CHIDI-provided APIs.
+*   **FastAPI Middleware for Logging:**
+    ```python
+    # backend/app/main.py (or a dedicated middleware file)
+    import time
+    import logging
+    from fastapi import Request, Response
+    from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseCallNext
+    # Assuming structured logging is configured (e.g., using python-json-logger)
+    logger = logging.getLogger("api_requests") # dedicated logger
+
+    class StructuredRequestLoggingMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next: RequestResponseCallNext) -> Response:
+            start_time = time.time()
+            # Try to get user_id if auth middleware has run (depends on middleware order)
+            user_id = request.state.user.id if hasattr(request.state, "user") and request.state.user else None
+            
+            response = await call_next(request)
+            process_time_ms = (time.time() - start_time) * 1000
+
+            log_extra = {
+                "method": request.method,
+                "path": request.url.path,
+                "query_params": str(request.query_params),
+                "client_host": request.client.host,
+                "status_code": response.status_code,
+                "process_time_ms": round(process_time_ms, 2),
+                "user_id": str(user_id) if user_id else None,
+                "request_id": request.headers.get("X-Request-ID") # If using request IDs
+            }
+            logger.info(f"{request.method} {request.url.path} - {response.status_code}", extra=log_extra)
+            return response
+    # app.add_middleware(StructuredRequestLoggingMiddleware)
+    ```
+*   **Celery Task Logging:** Configure Celery workers to output structured logs. Sentry SDK can be integrated with Celery for error reporting.
+    ```python
+    # backend/app/workers/celery_app.py
+    # import sentry_sdk
+    # from sentry_sdk.integrations.celery import CeleryIntegration
+    # sentry_sdk.init(dsn="YOUR_SENTRY_DSN", integrations=[CeleryIntegration()])
+    ```
+
+#### 6.5.7 Frontend Architecture
+*   **Sentry Integration:**
+    *   Initialize Sentry JS SDK early in the application lifecycle (e.g., in `app/layout.tsx` or a root client component).
+    *   `Sentry.init({ dsn: "YOUR_SENTRY_FRONTEND_DSN", integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()], ... })`
+    *   Capture user context: `Sentry.setUser({ id: userId, email: userEmail })` after login.
+*   **PostHog Integration:**
+    *   Initialize PostHog JS snippet/SDK (e.g., in `app/layout.tsx`).
+    *   `posthog.init("YOUR_POSTHOG_API_KEY", { api_host: "YOUR_POSTHOG_HOST" })`
+    *   Identify users: `posthog.identify(userId, { email: userEmail, name: userName })` after login.
+    *   Capture events: `posthog.capture("event_name", { property1: "value1" })` for key user interactions (e.g., button clicks, form submissions, page views, feature usage).
+
+#### 6.5.8 Detailed CRUD Operations
+*   Not applicable. This feature is about data emission and external system integration, not internal CRUD.
+
+#### 6.5.9 User Experience Flow (for Developers/Admins using the monitoring tools)
+*   **Scenario: Backend API Error Spike**
+    1.  Sentry detects an increase in 500 errors from a specific FastAPI endpoint.
+    2.  An alert is triggered (e.g., email, Slack notification to dev team) based on configured rules in Sentry.
+    3.  Developer clicks the link in the alert, navigates to the Sentry issue page.
+    4.  Developer reviews:
+        *   Stack trace of the error.
+        *   Request context (path, method, headers, user ID if available and captured).
+        *   Tags (e.g., environment, release version).
+        *   Frequency and number of affected users.
+    5.  Developer uses this information to debug. They might also query structured logs (e.g., in Loki/Kibana) using `request_id` (if available from Sentry context) or `user_id` for more detailed request flow.
+    6.  Once fixed and deployed, the Sentry issue can be marked as resolved.
+*   **Scenario: Investigating Low AI Response Quality**
+    1.  Product team notices an increase in escalations or negative feedback about AI responses (perhaps via PostHog tracking escalation events or manual feedback).
+    2.  Developer/Analyst queries the `ai_responses_log` table in the CHIDI database.
+        *   Filters for recent records with low `confidence_score` or `action_taken='escalated'`.
+        *   Examines `final_prompt_sent_to_llm`, `llm_raw_response`, `retrieved_context_snippets`, `detected_intent`, `extracted_entities`.
+    3.  This analysis helps identify patterns: Is the AI misunderstanding certain queries? Is context retrieval failing? Is the prompt weak for specific scenarios?
+    4.  Based on findings, prompts can be refined, context retrieval logic improved, or AI decision rules adjusted.
+*   **Scenario: Tracking Feature Adoption (PostHog)**
+    1.  Product Manager logs into PostHog.
+    2.  Navigates to "Insights" or "Funnels".
+    3.  Creates a funnel: e.g., User Signed Up -> Workspace Onboarding Started -> Workspace Onboarding Completed -> Product Added -> First Conversation Handled by AI.
+    4.  Analyzes drop-off rates at each step to identify friction points in the user journey.
+    5.  Views trends for custom events like "product_created" or "ai_escalation_occurred".
+
+#### 6.5.10 Security Considerations
+*   **PII in Logs and Error Reports:**
+    *   Critically important to avoid or scrub sensitive PII (Personally Identifiable Information) from logs and error reports sent to Sentry/PostHog.
+    *   Sentry: Configure "Data Scrubber" options and "PII" settings in project settings. Be mindful of what's included in `extra_data` for exceptions.
+    *   PostHog: Be selective about properties sent with events. Avoid sending raw message content or full user details unless necessary and compliant with privacy policies.
+    *   Structured Logs: Configure log formatters to omit or mask sensitive fields (e.g., passwords, full payment details, specific message content from customers).
+*   **API Keys and DSNs:**
+    *   Securely store Sentry DSNs, PostHog API keys, and any keys for log shipping services. Use environment variables; do not commit them to code.
+    *   Ensure these keys have the minimum necessary permissions.
+*   **Access Control to Monitoring Systems:**
+    *   Restrict access to Sentry, PostHog, and log management dashboards to authorized personnel only (e.g., via SSO, strong passwords, 2FA).
+*   **Log Injection:** While less common, if log messages incorporate unsanitized user input, there could be a risk of log injection (e.g., forging log entries, XSS in log viewing tools). Use structured logging with clear separation of message template and parameters.
+
+#### 6.5.11 Testing Strategy
+*   **Unit Tests:**
+    *   Test custom logging middleware logic (e.g., verify log format, fields captured).
+    *   Mock Sentry/PostHog SDKs to verify they are initialized and called correctly with expected data when specific events occur (e.g., an exception is raised, a user action is performed).
+*   **Integration Tests:**
+    *   Verify that actual exceptions in API handlers are captured by Sentry (can be tested against a dev Sentry project or by checking Sentry SDK's internal state/transport).
+    *   Verify that events sent via PostHog SDK are correctly formatted (again, test against dev PostHog project or inspect SDK behavior).
+*   **Manual Verification / E2E Simulation:**
+    *   Trigger test exceptions in dev/staging environment and confirm they appear in Sentry with correct context.
+    *   Perform key user actions in dev/staging and confirm events appear in PostHog.
+    *   Verify alert configurations by manually triggering conditions (e.g., simulate a high error rate) and checking if notifications are received.
+*   **Testing Alert Logic:** Ensure alerts are correctly routed and contain actionable information. Test escalation paths for alerts.
+
+#### 6.5.12 Data Management
+*   **Data Volume:** Logs, Sentry errors, and PostHog events can generate significant data.
+    *   Sentry: Relies on Sentry's infrastructure. Be mindful of event quotas based on subscription.
+    *   PostHog: Self-hosted or cloud. Cloud version has event-based pricing. Consider sampling for high-volume, low-value events if cost becomes an issue.
+    *   Logs: If shipping to a central system (ELK, Loki, Datadog), plan for storage and indexing costs. Implement log rotation for local file logs.
+*   **Data Retention:**
+    *   Configure data retention policies in Sentry, PostHog, and log management systems according to operational needs, compliance requirements, and budget.
+    *   Sentry typically retains error data for 90 days by default on many plans.
+    *   PostHog retention depends on plan/setup.
+*   **Sampling:**
+    *   Sentry: Uses dynamic sampling. Can be configured further.
+    *   PostHog: May use event sampling on high-traffic sites to manage costs.
+    *   Logging: For very high-volume logs, consider sampling less critical INFO logs in production.
+*   **Log Failed AI Responses:** As mentioned, these are stored in the `ai_responses_log` table for long-term analysis and also logged to Sentry if they represent an unexpected *system* failure during AI processing.
+
+#### 6.5.13 Error Handling & Logging (Meta-Level: For the Monitoring System Itself)
+*   **Resilience of Monitoring SDKs:** Ensure that failures in Sentry/PostHog SDKs (e.g., network issue preventing data send) do not crash the main application. SDKs usually handle this gracefully (e.g., try-except blocks internally, background sending).
+*   **Logging Monitoring Errors:** The application should log any errors encountered while trying to send data to Sentry/PostHog (e.g., "Failed to send event to PostHog: Connection Timeout"). This is usually handled by the SDKs themselves if their internal logging is enabled.
+*   **Alerting Thresholds & Tuning:**
+    *   Define meaningful and actionable thresholds for alerts to avoid alert fatigue.
+    *   Examples:
+        *   Social media API error rate > 5% over 15 minutes for a specific platform.
+        *   OpenAI API average p95 latency > 5 seconds for 10 minutes.
+        *   Celery `message_processing_tasks` queue length > 1000 items for > 5 minutes.
+        *   DB CPU utilization > 80% for > 10 minutes.
+    *   Regularly review and tune alert thresholds based on operational experience.
+*   **Recovery Mechanisms:**
+    *   For critical system failures detected by monitoring (e.g., DB down), there should be documented recovery procedures (runbooks).
+    *   Automated recovery (e.g., auto-scaling workers) can be built for some scenarios.
+
+---
+
+## 7. Success Metrics
+
+The success of the CHIDI MVP will be measured by a combination of user engagement, system performance, and AI effectiveness metrics.
+
+*   **User Authentication & Onboarding:**
+    *   **User Activation Rate:** Percentage of registered users who complete the workspace onboarding process (Target: >70%).
+    *   **Onboarding Completion Time:** Average time taken for users to complete the onboarding flow (Target: < 15 minutes).
+    *   **Profile Completeness Score:** Average score achieved by users after onboarding (Target: >80%).
+*   **Product Management:**
+    *   **Number of Products Added per Business:** Average number of products/SKUs added by active businesses within the first month (Target: >10).
+    *   **Frequency of Product Updates:** How often users engage with managing their product catalog.
+*   **Conversations (Smart Auto-Responder):**
+    *   **AI Auto-Response Rate:** Percentage of incoming customer DMs handled entirely by AI without escalation (Target: >60% for common queries).
+    *   **Escalation Rate:** Percentage of conversations requiring human intervention (Target: <30%).
+    *   **AI Response Accuracy/Relevance:** Qualitative assessment through user feedback and internal review (Target: >85% perceived accuracy for product-related queries).
+    *   **Average Time to First Response (AI):** Median time from customer message receipt to AI response sent (Target: <10 seconds).
+    *   **Average Time to Human Response (for escalations):** Median time from escalation to first human message (Target: < [Business defined SLA]).
+    *   **Customer Satisfaction (CSAT) with AI Interactions:** (Future - if feedback mechanism is implemented).
+*   **System & Platform:**
+    *   **Daily Active Users (DAU) / Monthly Active Users (MAU):** Growth and retention of user base.
+    *   **System Uptime:** For all core services (API, Webhooks, Frontend) (Target: >99.9%).
+    *   **API Error Rates:** Percentage of API calls resulting in 5xx errors (Target: <0.1%).
+    *   **Webhook Success Rate:** Percentage of webhooks successfully ingested and queued (Target: >99.9%).
+    *   **Application Performance:** Average API response times, page load times.
+
+---
+
+## 8. Risks and Mitigations
+
+| Risk ID | Risk Description                                                                 | Likelihood | Impact | Mitigation Strategy                                                                                                                               |
+| :------ | :------------------------------------------------------------------------------- | :--------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R01     | AI response quality (accuracy, relevance, tone) does not meet user expectations. | Medium     | High   | - Rigorous prompt engineering and testing. <br/> - Clear escalation paths to humans. <br/> - Collect user feedback on AI responses. <br/> - Use `ai_responses_log` for continuous improvement. |
+| R02     | Complexity of integrating and maintaining connections with social media APIs.     | Medium     | Medium | - Start with core features for Instagram/WhatsApp. <br/> - Thorough testing for each platform. <br/> - Robust error handling and token management. <br/> - Monitor API changes from platforms. |
+| R03     | Low user adoption or high churn rate due to perceived complexity or lack of value. | Medium     | High   | - Focus on a seamless onboarding experience. <br/> - Prioritize features providing immediate tangible benefits. <br/> - Actively solicit and incorporate user feedback post-MVP. |
+| R04     | Scalability issues with increased user load or message volume.                   | Low-Medium | High   | - Design for scalability from the start (e.g., Celery workers, stateless services where possible). <br/> - Implement performance testing. <br/> - Utilize scalable cloud infrastructure (e.g., Fly.io, Supabase). |
+| R05     | Security vulnerabilities leading to data breaches or unauthorized access.          | Low        | High   | - Adhere to security best practices (OWASP Top 10). <br/> - Regular security reviews/audits (future). <br/> - Secure handling of credentials and PII. <br/> - Dependency scanning. |
+| R06     | Reliance on third-party APIs (OpenAI, Social Media) leading to outages or cost fluctuations. | Medium     | Medium | - Implement circuit breakers and graceful degradation. <br/> - Monitor API costs and usage. <br/> - Explore alternative providers if necessary (long-term). |
+| R07     | Difficulty in accurately extracting SKUs or product information from user messages. | Medium     | Medium | - Iterative improvement of NLP models/prompts for entity extraction. <br/> - Allow users to confirm/correct AI's understanding in chat. <br/> - Provide clear guidance to customers on how to refer to products. |
+
+---
+
+## 9. Implementation Timeline
+
+The MVP development will be structured in iterative phases:
+
+*   **Phase 1: Foundation & Core Authentication (Estimated: X Weeks)**
+    *   Setup monorepo, CI/CD pipeline, core infrastructure (Supabase, Fly.io).
+    *   Implement User Authentication (Email/Password, Google OAuth).
+    *   Basic FastAPI backend structure, Next.js frontend structure.
+    *   Initial database schema setup with Prisma.
+*   **Phase 2: Workspace Onboarding & Business Context (Estimated: Y Weeks)**
+    *   Develop conversational UI for onboarding.
+    *   Implement AI-guided question flow for context capture.
+    *   Store business context in Supabase(Postgres).
+    *   Setup embedding generation (Celery task) and storage in Supabase Vector.
+    *   Basic workspace chat for AI interaction post-onboarding.
+*   **Phase 3: Product & Inventory Management (Estimated: Z Weeks)**
+    *   Develop Product CRUD UIs (forms, tables).
+    *   Implement API endpoints for products, variants, SKUs, inventory.
+    *   Develop SKU auto-generation and validation logic.
+*   **Phase 4: Conversations - Smart Auto-Responder (Estimated: A Weeks)**
+    *   Implement webhook ingestion for Instagram DMs and WhatsApp.
+    *   Develop AI service for intent recognition, entity extraction, context retrieval (products, business info), and response generation.
+    *   Implement escalation logic and notifications.
+    *   Build conversation management dashboard (list, chat view, manual messaging).
+    *   Integrate WebSocket for real-time dashboard updates.
+*   **Phase 5: Monitoring & Deployment Prep (Estimated: B Weeks)**
+    *   Integrate Sentry and PostHog.
+    *   Configure structured logging throughout the application.
+    *   Setup initial alerting rules.
+    *   Conduct thorough E2E testing, performance testing, and security checks.
+    *   Prepare for initial user onboarding/beta launch.
+
+**Total Estimated MVP Timeline: (X+Y+Z+A+B) Weeks**
+
+---
+
+## 10. Appendix
+
+*   **`CHIDI_OVERVIEW.md`:** (Link to or embed the original overview document that provided context for these features).
