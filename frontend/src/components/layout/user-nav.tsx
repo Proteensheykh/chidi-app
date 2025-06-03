@@ -59,36 +59,75 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-10 w-10 border-2 border-[#E8F2ED]">
             <AvatarImage src={userData.avatarUrl} alt={userData.name} />
             <AvatarFallback className="bg-[#1A4A3A] text-white">{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-64" align="end" forceMount>
         <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userData.name}</p>
-            <p className="text-xs leading-none text-[#64748B]">{userData.email}</p>
+          <div className="flex items-center gap-3 py-1">
+            <Avatar className="h-10 w-10 border-2 border-[#E8F2ED]">
+              <AvatarImage src={userData.avatarUrl} alt={userData.name} />
+              <AvatarFallback className="bg-[#1A4A3A] text-white">{initials}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{userData.name}</p>
+              <p className="text-xs leading-none text-[#64748B]">{userData.email}</p>
+            </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard">
+            <Link href="/dashboard/profile" className="flex items-center">
               <Icons.user className="mr-2 h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/profile">
-              <Icons.settings className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard" className="flex items-center">
+              <Icons.dashboard className="mr-2 h-4 w-4" />
+              <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/workspace" className="flex items-center">
+              <Icons.user className="mr-2 h-4 w-4" />
+              <span>Workspace</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/products" className="flex items-center">
+              <Icons.package className="mr-2 h-4 w-4" />
+              <span>Products</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/settings" className="flex items-center">
+              <Icons.settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/help" className="flex items-center">
+              <Icons.helpCircle className="mr-2 h-4 w-4" />
+              <span>Help & Support</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={handleSignOut}
+        >
           <Icons.logout className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

@@ -1,9 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
+/* Custom CSS variables for theming */
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: "Mona Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -44,80 +43,191 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Border Radius */
+  --radius: 0.75rem; /* 12px border radius from style guide */
+  
+  /* Primary Colors */
+  --chidi-forest: #1A4A3A;
+  --chidi-forest-rgb: 26, 74, 58;
+  --pure-white: #FFFFFF;
+  --pure-white-rgb: 255, 255, 255;
+  
+  /* Secondary Colors */
+  --soft-sage: #E8F2ED;
+  --soft-sage-rgb: 232, 242, 237;
+  --tech-gray: #F8F9FA;
+  --tech-gray-rgb: 248, 249, 250;
+  
+  /* Accent Colors - Nature Palette */
+  --fresh-mint: #10D9A0;
+  --fresh-mint-rgb: 16, 217, 160;
+  --sky-blue: #0EA5E9;
+  --sky-blue-rgb: 14, 165, 233;
+  --sunset-orange: #F59E0B;
+  --sunset-orange-rgb: 245, 158, 11;
+  --coral-pink: #F472B6;
+  --coral-pink-rgb: 244, 114, 182;
+  
+  /* Functional Colors */
+  --alert-red: #EF4444;
+  --alert-red-rgb: 239, 68, 68;
+  --charcoal: #1F2937;
+  --charcoal-rgb: 31, 41, 55;
+  --slate-gray: #64748B;
+  --slate-gray-rgb: 100, 116, 139;
+  --light-border: #E2E8F0;
+  --light-border-rgb: 226, 232, 240;
+  
+  /* System Variables */
+  --background: var(--pure-white);
+  --foreground: var(--charcoal);
+  --card: var(--pure-white);
+  --card-foreground: var(--charcoal);
+  --popover: var(--pure-white);
+  --popover-foreground: var(--charcoal);
+  --primary: var(--chidi-forest);
+  --primary-foreground: var(--pure-white);
+  --secondary: var(--soft-sage);
+  --secondary-foreground: var(--chidi-forest);
+  --muted: var(--tech-gray);
+  --muted-foreground: var(--slate-gray);
+  --accent: var(--soft-sage);
+  --accent-foreground: var(--chidi-forest);
+  --destructive: var(--alert-red);
+  --destructive-foreground: var(--pure-white);
+  --border: var(--light-border);
+  --input: var(--light-border);
+  --ring: var(--chidi-forest);
+  
+  /* Chart Colors */
+  --chart-1: var(--fresh-mint);
+  --chart-2: var(--sky-blue);
+  --chart-3: var(--sunset-orange);
+  --chart-4: var(--coral-pink);
+  --chart-5: var(--chidi-forest);
+  
+  /* Sidebar Colors */
+  --sidebar: var(--pure-white);
+  --sidebar-foreground: var(--charcoal);
+  --sidebar-primary: var(--chidi-forest);
+  --sidebar-primary-foreground: var(--pure-white);
+  --sidebar-accent: var(--soft-sage);
+  --sidebar-accent-foreground: var(--chidi-forest);
+  --sidebar-border: var(--light-border);
+  --sidebar-ring: var(--chidi-forest);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* System Variables - Dark Mode */
+  --background: var(--charcoal);
+  --foreground: var(--pure-white);
+  --card: #2A3441; /* Slightly lighter than charcoal for cards */
+  --card-foreground: var(--pure-white);
+  --popover: #2A3441;
+  --popover-foreground: var(--pure-white);
+  --primary: var(--fresh-mint); /* Use fresh mint as primary in dark mode */
+  --primary-foreground: var(--charcoal);
+  --secondary: #374151; /* Darker secondary for dark mode */
+  --secondary-foreground: var(--pure-white);
+  --muted: #374151;
+  --muted-foreground: #9CA3AF; /* Lighter gray for muted text */
+  --accent: #374151;
+  --accent-foreground: var(--pure-white);
+  --destructive: var(--alert-red);
+  --destructive-foreground: var(--pure-white);
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: var(--fresh-mint);
+  
+  /* Chart Colors - Dark Mode */
+  --chart-1: var(--fresh-mint);
+  --chart-2: var(--sky-blue);
+  --chart-3: var(--sunset-orange);
+  --chart-4: var(--coral-pink);
+  --chart-5: #8B5CF6; /* Purple accent for dark mode */
+  
+  /* Sidebar Colors - Dark Mode */
+  --sidebar: #2A3441;
+  --sidebar-foreground: var(--pure-white);
+  --sidebar-primary: var(--fresh-mint);
+  --sidebar-primary-foreground: var(--charcoal);
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: var(--pure-white);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: var(--fresh-mint);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
+    outline-color: rgba(var(--ring-rgb), 0.5);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  }
+
+  /* Typography styles based on style guide */
+  h1, .h1 {
+    font-size: 1.75rem; /* 28px */
+    line-height: 2.25rem; /* 36px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--charcoal);
+  }
+
+  h2, .h2 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem; /* 28px */
+    font-weight: 600;
+    color: var(--charcoal);
+  }
+
+  .display {
+    font-size: 2.25rem; /* 36px */
+    line-height: 2.75rem; /* 44px */
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--charcoal);
+  }
+
+  .body-large {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem; /* 28px */
+    font-weight: 400;
+  }
+
+  .body {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem; /* 24px */
+    font-weight: 400;
+  }
+
+  .caption {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+    font-weight: 500;
+    color: var(--slate-gray);
+  }
+
+  .small {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1rem; /* 16px */
+    font-weight: 400;
+    color: var(--slate-gray);
+  }
+
+  /* Spacing variables based on style guide */
+  :root {
+    --space-1: 0.25rem; /* 4px */
+    --space-2: 0.5rem; /* 8px */
+    --space-3: 0.75rem; /* 12px */
+    --space-4: 1rem; /* 16px */
+    --space-6: 1.5rem; /* 24px */
+    --space-8: 2rem; /* 32px */
+    --space-12: 3rem; /* 48px */
+    --space-16: 4rem; /* 64px */
   }
 
   /* Auth pages responsive styling */
