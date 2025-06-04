@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { MobileResponsiveLayout } from './mobile-responsive-layout';
 import { SidebarProvider } from '@/contexts/sidebar-context';
 import { Header } from './header';
 import { Sidebar } from '@/components/layout/sidebar';

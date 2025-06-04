@@ -43,27 +43,27 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       title: 'Conversations',
-      href: '/dashboard/conversations',
+      href: '/conversations',
       icon: <MessageSquare className="h-5 w-5" />,
       badge: 12, // Example badge count
       variant: 'default',
     },
     {
       title: 'Products',
-      href: '/dashboard/products',
+      href: '/products',
       icon: <Package className="h-5 w-5" />,
       variant: 'default',
     },
     {
       title: 'Orders',
-      href: '/dashboard/orders',
+      href: '/orders',
       icon: <ShoppingCart className="h-5 w-5" />,
       badge: 3, // Example badge count
       variant: 'default',
     },
     {
       title: 'Analytics',
-      href: '/dashboard/analytics',
+      href: '/analytics',
       icon: <BarChart className="h-5 w-5" />,
       variant: 'default',
     },
@@ -72,26 +72,26 @@ export function Sidebar({ className }: SidebarProps) {
   const utilityNavItems: NavItem[] = [
     {
       title: 'Workspace',
-      href: '/dashboard/workspace',
+      href: '/workspace',
       icon: <UserCircle className="h-5 w-5" />,
       variant: 'ghost',
     },
     {
       title: 'Notifications',
-      href: '/dashboard/notifications',
+      href: '/notifications',
       icon: <Bell className="h-5 w-5" />,
       badge: 5, // Example badge count
       variant: 'ghost',
     },
     {
       title: 'Settings',
-      href: '/dashboard/settings',
+      href: '/settings',
       icon: <Settings className="h-5 w-5" />,
       variant: 'ghost',
     },
     {
       title: 'Help',
-      href: '/dashboard/help',
+      href: '/help',
       icon: <HelpCircle className="h-5 w-5" />,
       variant: 'ghost',
     },

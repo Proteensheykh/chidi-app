@@ -49,7 +49,7 @@ const featureCards: FeatureCard[] = [
     icon: <MessageSquare className="h-5 w-5" />,
     color: '#1A4A3A',
     count: 12,
-    href: '/dashboard/conversations',
+    href: '/conversations',
   },
   {
     title: 'Products',
@@ -57,7 +57,7 @@ const featureCards: FeatureCard[] = [
     icon: <Package className="h-5 w-5" />,
     color: '#3B82F6',
     count: 24,
-    href: '/dashboard/products',
+    href: '/products',
   },
   {
     title: 'Workspace',
@@ -65,7 +65,7 @@ const featureCards: FeatureCard[] = [
     icon: <UserCircle className="h-5 w-5" />,
     color: '#F472B6',
     count: 0,
-    href: '/dashboard/workspace',
+    href: '/workspace',
   },
   {
     title: 'Context Workspace',
@@ -73,7 +73,7 @@ const featureCards: FeatureCard[] = [
     icon: <MessageSquare className="h-5 w-5" />,
     color: '#10B981',
     count: 0,
-    href: '/dashboard/workspace/context',
+    href: '/workspace/context',
   },
   {
     title: 'Dashboard',

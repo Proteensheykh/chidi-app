@@ -23,7 +23,7 @@ export function Header() {
   const [notificationCount] = useState(5); // This would be fetched from an API in a real app
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-[#E2E8F0] bg-white shadow-sm px-6">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
@@ -42,19 +42,19 @@ export function Header() {
             {user && (
               <>
                 <Link 
-                  href="/dashboard/products" 
+                  href="/products" 
                   className="text-sm font-medium text-[#64748B] transition-colors hover:text-[#1F2937]"
                 >
                   Products
                 </Link>
                 <Link 
-                  href="/dashboard/conversations" 
+                  href="/conversations" 
                   className="text-sm font-medium text-[#64748B] transition-colors hover:text-[#1F2937]"
                 >
                   Conversations
                 </Link>
                 <Link 
-                  href="/dashboard/workspace" 
+                  href="/workspace" 
                   className="text-sm font-medium text-[#64748B] transition-colors hover:text-[#1F2937]"
                 >
                   Workspace

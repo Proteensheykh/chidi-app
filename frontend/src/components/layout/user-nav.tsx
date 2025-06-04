@@ -81,43 +81,23 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/profile" className="flex items-center">
+            <Link href="/profile" className="flex items-center">
               <Icons.user className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="flex items-center">
-              <Icons.dashboard className="mr-2 h-4 w-4" />
-              <span>Dashboard</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/workspace" className="flex items-center">
-              <Icons.user className="mr-2 h-4 w-4" />
-              <span>Workspace</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard/products" className="flex items-center">
-              <Icons.package className="mr-2 h-4 w-4" />
-              <span>Products</span>
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings" className="flex items-center">
+            <Link href="/settings" className="flex items-center">
               <Icons.settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/help" className="flex items-center">
+            <Link href="/help" className="flex items-center">
               <Icons.helpCircle className="mr-2 h-4 w-4" />
               <span>Help & Support</span>
             </Link>
