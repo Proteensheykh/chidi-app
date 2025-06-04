@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generatedAt": "2025-05-31T11:31:56.884Z",
+    "generatedAt": "2025-06-01T07:49:01.869Z",
     "tasksAnalyzed": 1,
     "totalTasks": 10,
-    "analysisCount": 1,
+    "analysisCount": 2,
     "thresholdScore": 5,
-    "projectName": "Taskmaster",
+    "projectName": "Task Master",
     "usedResearch": true
   },
   "complexityAnalysis": [
@@ -16,6 +16,14 @@
       "recommendedSubtasks": 6,
       "expansionPrompt": "Break down the User Authentication System implementation into subtasks covering Supabase Auth configuration, frontend auth pages and components, backend JWT validation, user profile management, and testing strategy.",
       "reasoning": "This task involves multiple complex components including OAuth integration, JWT handling, state management, and database interactions across both frontend and backend. It requires careful security considerations and extensive testing, justifying a high complexity score and multiple subtasks."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Build Workspace Onboarding System",
+      "complexityScore": 9,
+      "recommendedSubtasks": 8,
+      "expansionPrompt": "Break down this AI-powered onboarding system into distinct components: conversational UI development, WebSocket real-time messaging implementation, AI service integration with OpenAI, business context extraction and structuring, vector embedding generation with Celery, database schema implementation for multiple tables, context retrieval with vector similarity search, and comprehensive testing strategy covering unit, integration, and E2E tests.",
+      "reasoning": "This is a highly complex task involving multiple technologies (React, WebSocket, AI/ML, vector databases, async processing), sophisticated AI integration for conversational flow and embedding generation, real-time communication, complex data modeling across multiple database tables, and requires extensive testing across different layers. The integration of AI services, vector search, and real-time features significantly increases complexity."
     }
   ]
 }

@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-py"
+  interface = "asyncio"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  fullName      String?        @map("full_name")
+  avatarUrl     String?        @map("avatar_url")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  businesses    Business[]
+  conversations Conversation[]
+  knowledgeItems KnowledgeItem[]
+
+  @@map("users")
+}
+
+model Business {
+  id          String         @id @default(uuid())
+  name        String
+  industry    String?
+  description String?
+  ownerId     String         @map("owner_id")
+  owner       User           @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  products    Product[]
+  knowledgeItems KnowledgeItem[]
+
+  @@map("businesses")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Float?
+  businessId  String   @map("business_id")
+  business    Business @relation(fields: [businessId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  title     String?
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  content        String
+  sender         String       // "user" or "assistant"
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  timestamp      DateTime     @default(now())
+
+  @@map("messages")
+}
+
+model KnowledgeItem {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  source      String?
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  businessId  String?   @map("business_id")
+  business    Business? @relation(fields: [businessId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  embedding   Unsupported("vector")?  // Vector type for embeddings
+
+  @@map("knowledge_items")
+}
+
+model OnboardingData {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  businessName    String   @map("business_name")
+  industry        String
+  description     String
+  targetAudience  String?  @map("target_audience")
+  goals           String[] // Array of goals
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("onboarding_data")
+}
