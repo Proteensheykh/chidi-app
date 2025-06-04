@@ -81,6 +81,6 @@ node_modules/
 .roomodes
 
 # Added by Claude Task Master
-tasks
+/tasks
 tasks.json
 tasks.json.bak

@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: chidi-backend
+    env: python
+    buildCommand: pip install -r requirements.txt && prisma generate
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chidi-redis
+          property: connectionString
+      - key: ENVIRONMENT
+        value: production
+      - key: API_V1_STR
+        value: /api/v1
+      - key: CORS_ORIGINS
+        value: https://chidi-frontend.onrender.com
+    autoDeploy: true
+    healthCheckPath: /api/v1/health
+
+  - type: redis
+    name: chidi-redis
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+    plan: free
+
+  - type: worker
+    name: chidi-worker
+    env: python
+    buildCommand: pip install -r requirements.txt && prisma generate
+    startCommand: celery -A app.core.celery_app worker --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: chidi-redis
+          property: connectionString
+      - key: ENVIRONMENT
+        value: production
+    autoDeploy: true
