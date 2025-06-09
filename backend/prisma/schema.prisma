@@ -13,19 +13,57 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Enum types
+enum SocialPlatformType {
+  INSTAGRAM
+  WHATSAPP
+  FACEBOOK
+  TWITTER
+  OTHER
+}
+
+enum MessageSenderType {
+  CUSTOMER
+  AI_BOT
+  BUSINESS_HUMAN
+}
+
+enum ConversationStatus {
+  NEW
+  ACTIVE_AI
+  ACTIVE_HUMAN
+  WAITING_CUSTOMER
+  ESCALATED_HUMAN_NEEDED
+  RESOLVED_BY_AI
+  RESOLVED_BY_HUMAN
+  CLOSED
+}
+
 // User model
 model User {
   id                String           @id @default(uuid())
   email             String           @unique
   firstName         String?
   lastName          String?
+  avatarUrl         String?
+  phoneNumber       String?
+  isActive          Boolean          @default(true)
+  lastLoginAt       DateTime?
+  supabaseAuthId    String?          @unique // Link to Supabase Auth
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   businesses        Business[]
   conversations     Conversation[]
   messages          Message[]
   knowledgeItems    KnowledgeItem[]
   onboardingData    OnboardingData?
+  socialConnections SocialConnection[]
+  workspaceChatMessages WorkspaceChatMessage[]
+
+  @@index([email])
+  @@index([supabaseAuthId])
 }
 
 // Business model
@@ -34,13 +72,88 @@ model Business {
   name              String
   description       String?
   industry          String?
+  logoUrl           String?
+  websiteUrl        String?
+  address           String?
+  city              String?
+  state             String?
+  postalCode        String?
+  country           String?
+  phoneNumber       String?
+  email             String?
+  foundedYear       Int?
+  employeeCount     Int?
+  targetAudience    String?
+  missionStatement  String?
+  valueProposition  String?
+  isActive          Boolean          @default(true)
+  onboardingCompleted Boolean        @default(false)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   userId            String
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   products          Product[]
   conversations     Conversation[]
   knowledgeItems    KnowledgeItem[]
+  socialConnections SocialConnection[]
+  businessContextChunks BusinessContextChunk[]
+
+  @@index([userId])
+  @@index([name])
+}
+
+// BusinessContextChunk model for storing business context
+model BusinessContextChunk {
+  id                String           @id @default(uuid())
+  businessId        String
+  business          Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  chunkText         String
+  sourceField       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([businessId])
+}
+
+// SocialConnection model
+model SocialConnection {
+  id                String           @id @default(uuid())
+  platform          SocialPlatformType
+  accountId         String
+  accountName       String?
+  accessToken       String?
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId        String
+  business          Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, platform, accountId])
+  @@index([businessId])
+  @@index([userId])
+  @@index([platform])
+}
+
+// WorkspaceChatMessage model for onboarding and business context capture
+model WorkspaceChatMessage {
+  id                String           @id @default(uuid())
+  content           String
+  role              String           // "user", "assistant", "system"
+  createdAt         DateTime         @default(now())
+  
+  // Relations
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Product model
@@ -59,13 +172,23 @@ model Product {
 model Conversation {
   id                String           @id @default(uuid())
   title             String
+  status            ConversationStatus @default(NEW)
+  platformConversationId String?     // ID from external platform
+  lastMessageAt     DateTime         @default(now())
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   userId            String
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessId        String?
   business          Business?        @relation(fields: [businessId], references: [id], onDelete: SetNull)
   messages          Message[]
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([status])
+  @@index([lastMessageAt])
 }
 
 // Message model
@@ -73,11 +196,40 @@ model Message {
   id                String           @id @default(uuid())
   content           String
   role              String           // "user", "assistant", "system"
+  senderType        MessageSenderType
+  platformMessageId String?          // ID from external platform
   createdAt         DateTime         @default(now())
+  
+  // Relations
   conversationId    String
   conversation      Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   userId            String?
   user              User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([platformMessageId])
+}
+
+// AIResponseLog model
+model AIResponseLog {
+  id                String           @id @default(uuid())
+  messageId         String?          // Optional reference to the message
+  promptSent        String
+  rawResponse       String
+  processedResponse String?
+  detectedIntent    String?
+  confidenceScore   Float?
+  processingTimeMs  Int?
+  actionTaken       String?
+  errorOccurred     Boolean          @default(false)
+  errorMessage      String?
+  createdAt         DateTime         @default(now())
+  
+  @@index([messageId])
+  @@index([detectedIntent])
+  @@index([errorOccurred])
+  @@index([createdAt])
 }
 
 // KnowledgeItem model with vector support
@@ -89,10 +241,15 @@ model KnowledgeItem {
   embedding         Unsupported("vector")?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   userId            String
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   businessId        String?
   business          Business?        @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@index([businessId])
+  @@index([userId])
 }
 
 // OnboardingData model
@@ -100,8 +257,13 @@ model OnboardingData {
   id                String           @id @default(uuid())
   completed         Boolean          @default(false)
   currentStep       Int              @default(0)
+  progress          Float            @default(0) // 0-100%
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   userId            String           @unique
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

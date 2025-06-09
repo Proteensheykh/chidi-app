@@ -110,3 +110,8 @@ render.yaml
 
 # Added by Claude Task Master
 tasks/
+
+
+prisma/schema.prisma
+prisma/migrations
+prisma/seed.ts
