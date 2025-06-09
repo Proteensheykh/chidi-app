@@ -53,7 +53,6 @@ dump.rdb
 
 # Project context
 
-
 # windsurf
 .codeium
 .windsurf
@@ -63,9 +62,10 @@ dump.rdb
 logs
 *.log
 dev-debug.log
+
 # Dependency directories
 node_modules/
-# Environment variables
+
 # Editor directories and files
 .vscode
 *.suo
@@ -73,14 +73,40 @@ node_modules/
 *.njsproj
 *.sln
 *.sw?
-# OS specific
-# Task files
 
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Task files
 .roo
 .cursor
 .roomodes
 
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Render deployment files (optional)
+render.yaml
+
 # Added by Claude Task Master
-/tasks
-tasks.json
-tasks.json.bak
+tasks/

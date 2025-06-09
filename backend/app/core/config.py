@@ -16,6 +16,14 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "CHIDI App"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
+    # External API Keys
+    ANTHROPIC_API_KEY: Optional[str] = None
+    GOOGLE_API_KEY: Optional[str] = None
+    
+    # Render Configuration
+    RENDER_APP_NAME: Optional[str] = None
+    RENDER_API_KEY: Optional[str] = None
+    
     # CORS Configuration
     CORS_ORIGINS: List[Union[str, AnyHttpUrl]] = [
         "http://localhost:3000", 
@@ -30,7 +38,6 @@ class Settings(BaseSettings):
     # Supabase Configuration
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
-    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     
     # OpenAI Configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
@@ -38,6 +45,7 @@ class Settings(BaseSettings):
     
     # Database Configuration
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    DIRECT_URL: Optional[str] = os.getenv("DIRECT_URL", None)
     
     # Redis Configuration
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
@@ -45,20 +53,27 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: Optional[str] = os.getenv("REDIS_PASSWORD")
     REDIS_URL: str = os.getenv(
         "REDIS_URL", 
-        f"redis://{'':' + REDIS_PASSWORD + '@' if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}/0"
+        f"redis://{f':{REDIS_PASSWORD}@' if REDIS_PASSWORD else ''}{REDIS_HOST}:{REDIS_PORT}/0"
     )
     
     # Celery Configuration
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", REDIS_URL)
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", REDIS_URL)
     
+    @classmethod
     @field_validator("CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    def validate_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                # Handle JSON array string
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            # Handle comma-separated string
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
     
     def validate_supabase_config(self) -> bool:
         """Validate that Supabase configuration is present"""
@@ -91,9 +106,12 @@ class Settings(BaseSettings):
             params["password"] = self.REDIS_PASSWORD
         return params
     
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = {
+        "case_sensitive": True,
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_nested_delimiter": "__"
+    }
 
 settings = Settings()
 

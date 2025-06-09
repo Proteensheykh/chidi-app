@@ -2,106 +2,106 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-py"
-  interface = "asyncio"
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
+// User model
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  fullName      String?        @map("full_name")
-  avatarUrl     String?        @map("avatar_url")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  businesses    Business[]
-  conversations Conversation[]
-  knowledgeItems KnowledgeItem[]
-
-  @@map("users")
+  id                String           @id @default(uuid())
+  email             String           @unique
+  firstName         String?
+  lastName          String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  businesses        Business[]
+  conversations     Conversation[]
+  messages          Message[]
+  knowledgeItems    KnowledgeItem[]
+  onboardingData    OnboardingData?
 }
 
+// Business model
 model Business {
-  id          String         @id @default(uuid())
-  name        String
-  industry    String?
-  description String?
-  ownerId     String         @map("owner_id")
-  owner       User           @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  products    Product[]
-  knowledgeItems KnowledgeItem[]
-
-  @@map("businesses")
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  industry          String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products          Product[]
+  conversations     Conversation[]
+  knowledgeItems    KnowledgeItem[]
 }
 
+// Product model
 model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  price       Float?
-  businessId  String   @map("business_id")
-  business    Business @relation(fields: [businessId], references: [id])
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@map("products")
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  price             Float?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  businessId        String
+  business          Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
+// Conversation model
 model Conversation {
-  id        String    @id @default(uuid())
-  title     String?
-  userId    String    @map("user_id")
-  user      User      @relation(fields: [userId], references: [id])
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  messages  Message[]
-
-  @@map("conversations")
+  id                String           @id @default(uuid())
+  title             String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId        String?
+  business          Business?        @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  messages          Message[]
 }
 
+// Message model
 model Message {
-  id             String       @id @default(uuid())
-  content        String
-  sender         String       // "user" or "assistant"
-  conversationId String       @map("conversation_id")
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  timestamp      DateTime     @default(now())
-
-  @@map("messages")
+  id                String           @id @default(uuid())
+  content           String
+  role              String           // "user", "assistant", "system"
+  createdAt         DateTime         @default(now())
+  conversationId    String
+  conversation      Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
+// KnowledgeItem model with vector support
 model KnowledgeItem {
-  id          String    @id @default(uuid())
-  title       String
-  content     String
-  source      String?
-  userId      String    @map("user_id")
-  user        User      @relation(fields: [userId], references: [id])
-  businessId  String?   @map("business_id")
-  business    Business? @relation(fields: [businessId], references: [id])
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  embedding   Unsupported("vector")?  // Vector type for embeddings
-
-  @@map("knowledge_items")
+  id                String           @id @default(uuid())
+  title             String
+  content           String
+  source            String?
+  embedding         Unsupported("vector")?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId        String?
+  business          Business?        @relation(fields: [businessId], references: [id], onDelete: SetNull)
 }
 
+// OnboardingData model
 model OnboardingData {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
-  businessName    String   @map("business_name")
-  industry        String
-  description     String
-  targetAudience  String?  @map("target_audience")
-  goals           String[] // Array of goals
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  @@map("onboarding_data")
+  id                String           @id @default(uuid())
+  completed         Boolean          @default(false)
+  currentStep       Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
