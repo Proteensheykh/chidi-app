@@ -1,0 +1,324 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Project Infrastructure and Repository",
+      "description": "Initialize the monorepo structure with FastAPI backend, Next.js frontend, and configure core development infrastructure including Supabase, Prisma, and deployment pipeline.",
+      "details": "Create the complete file structure as specified in the PRD (backend/, frontend/, docs/, scripts/). Initialize FastAPI with main.py, configure Next.js 14 with App Router, setup Supabase project with PostgreSQL and Vector extensions. Configure Prisma for database management, setup environment variables (.env.example files), configure Docker for local development with docker-compose.yml including Redis for Celery. Initialize Git repository with proper .gitignore, setup CI/CD pipeline basics, and configure deployment to Fly.io. Install core dependencies: FastAPI, Uvicorn, Prisma, Celery, Redis, Next.js, Tailwind CSS, Shadcn/ui components.",
+      "testStrategy": "Verify repository structure matches PRD specifications, test local development environment startup (docker-compose up), confirm Supabase connection, validate Prisma schema generation, and ensure Next.js development server runs successfully.",
+      "priority": "high",
+      "dependencies": [],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 2,
+      "title": "Implement User Authentication System",
+      "description": "Build secure authentication using Supabase Auth with email/password and Google OAuth support, including JWT validation middleware and user profile management.",
+      "details": "Configure Supabase Auth with email/password and Google OAuth providers. Create auth pages in Next.js: /login, /signup, /forgot-password, /callback. Implement AuthContext and useAuth hook for global auth state management. Build reusable components: LoginForm.tsx, SignupForm.tsx, OAuthButton.tsx. Setup FastAPI JWT validation middleware using get_current_user dependency. Create public users table with Prisma schema (id, email, full_name, avatar_url, created_at, updated_at) with foreign key to auth.users. Implement API endpoints: GET/PUT /api/v1/users/me. Configure protected routes in Next.js with middleware. Setup auth state persistence and automatic token refresh.",
+      "testStrategy": "Unit tests for auth components and JWT validation. Integration tests for auth API endpoints. E2E tests for complete signup/login flows including OAuth. Test protected route access control and session persistence across browser refreshes.",
+      "priority": "high",
+      "dependencies": [
+        1
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set up Authentication Context and State Management",
+          "description": "Create a React Context for authentication state management that will handle user sessions, login status, and auth-related functions.",
+          "dependencies": [],
+          "details": "Implement AuthContext.tsx and AuthProvider component that will wrap the application. Include state for currentUser, loading status, and error handling. Create helper functions for login, logout, signup, and session persistence. Use React's useContext hook to make auth state accessible throughout the app. Start with mock/dummy data before Supabase integration.",
+          "status": "done"
+        },
+        {
+          "id": 2,
+          "title": "Build Authentication UI Components with shadcn/ui",
+          "description": "Create reusable UI components for authentication forms using shadcn/ui and Tailwind CSS.",
+          "dependencies": [
+            1
+          ],
+          "details": "Develop form components for login, signup, password reset, and email verification. Implement form validation using a form library compatible with shadcn/ui. Style components according to the design system using Tailwind CSS. Create loading states, error messages, and success notifications for auth operations. Ensure components are accessible and responsive.",
+          "status": "done"
+        },
+        {
+          "id": 3,
+          "title": "Implement Authentication Pages in Next.js",
+          "description": "Create the necessary pages for authentication flow in the Next.js application structure.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Create pages for login, signup, password reset, email verification, and account recovery. Implement protected routes that redirect unauthenticated users. Set up route guards using Next.js middleware. Connect the auth UI components to the AuthContext. Test the flow with mock data before backend integration.",
+          "status": "done"
+        },
+        {
+          "id": 4,
+          "title": "Configure Supabase Authentication",
+          "description": "Set up and configure Supabase authentication services for the application.",
+          "dependencies": [
+            1
+          ],
+          "details": "Create a Supabase project and configure auth settings. Enable email/password authentication and any OAuth providers needed. Set up email templates for verification and password reset. Configure security settings like JWT expiration and refresh token rotation. Create API helper functions to interact with Supabase auth from the frontend.",
+          "status": "done"
+        },
+        {
+          "id": 5,
+          "title": "Integrate Frontend with Supabase Auth",
+          "description": "Connect the frontend authentication system to the Supabase backend.",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Replace mock data with actual Supabase auth calls in the AuthContext. Implement JWT storage and refresh logic. Handle auth state changes and session persistence. Set up user profile database tables and relationships. Test the complete authentication flow with real backend integration.",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Create Database Schema and Models",
+      "description": "Design and implement the complete database schema using Prisma for all core entities including businesses, products, conversations, and social connections.",
+      "details": "Create Prisma schema with all tables: users, businesses, products, product_variants, product_variant_options, inventory_items, social_connections, conversations, messages, ai_responses_log, business_context_chunks, workspace_chat_messages. Define proper relationships, foreign keys, indexes, and constraints. Create ENUM types for social_platform_type, message_sender_type, conversation_status, etc. Setup business_context_embeddings table in Supabase Vector with vector(1536) for OpenAI embeddings. Configure unique constraints (business_id + sku for inventory_items, etc.). Generate and run initial migration. Create Prisma client configuration and database session management.",
+      "testStrategy": "Validate schema generation and migration execution. Test foreign key constraints and cascading deletes. Verify unique constraints work correctly. Test database connection and basic CRUD operations for each model.",
+      "priority": "high",
+      "dependencies": [
+        1,
+        2
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Define Core User and Business Models",
+          "description": "Create Prisma schema for users and businesses tables with proper relationships, indexes, and constraints.",
+          "details": "Create Prisma schema for users table with authentication fields. Create Prisma schema for businesses table with all required fields. Define relationship between users and businesses. Set up proper indexes and constraints.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 2,
+          "title": "Implement Product and Inventory Models",
+          "description": "Create schema for products, variants, options, and inventory with proper relationships and constraints.",
+          "details": "Create schema for products, product_variants, and product_variant_options. Create schema for inventory_items with proper constraints. Define relationships between business, products, and inventory. Set up unique constraints (business_id + sku for inventory_items).",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 3,
+          "title": "Set Up Conversation and Messaging Models",
+          "description": "Create schema for conversations, messages, and AI responses with proper relationships and enums.",
+          "details": "Create schema for conversations and messages tables. Create schema for ai_responses_log. Define ENUM types for message_sender_type, conversation_status. Configure relationships between users, businesses, and conversations.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 4,
+          "title": "Configure Vector Embeddings for AI Features",
+          "description": "Set up vector embeddings tables for AI context and knowledge base features.",
+          "details": "Set up business_context_chunks table. Configure business_context_embeddings table in Supabase Vector. Set up vector(1536) for OpenAI embeddings. Create proper indexes for vector similarity search.",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 3
+        },
+        {
+          "id": 5,
+          "title": "Generate Database Client and Connection Management",
+          "description": "Create Prisma client configuration, database session management, and run initial migration.",
+          "details": "Create Prisma client configuration. Set up database session management. Generate and run initial migration. Create test scripts for basic CRUD operations.",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 3
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Build Workspace Onboarding System",
+      "description": "Develop AI-powered conversational onboarding interface that captures business context and stores it as structured data and vector embeddings.",
+      "details": "Create ConversationalUI.tsx component for chat interface with message bubbles, input field, and real-time messaging. Build OnboardingForm.tsx with progress tracking and milestone indicators. Implement WebSocket connection for real-time chat using FastAPI WebSocket endpoint. Create AI service integration with OpenAI for conversational flow, intent recognition, and response generation. Build business context capture logic that extracts structured data (business name, type, target audience, goals) from conversational input. Implement Celery tasks for asynchronous embedding generation using OpenAI Ada v2 model. Store business context in businesses table and chunks/embeddings in respective tables. Create workspace chat persistence in workspace_chat_messages table. Implement context retrieval using vector similarity search.",
+      "testStrategy": "Unit tests for conversational UI components and AI service methods. Integration tests for WebSocket message flow and database operations. Test embedding generation and vector search functionality. E2E tests for complete onboarding flow from start to business profile completion.",
+      "priority": "medium",
+      "dependencies": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Conversational UI Development",
+          "description": "Build the chat interface components for AI-powered onboarding conversations",
+          "dependencies": [],
+          "details": "Create React components for chat bubbles, message input, typing indicators, and conversation flow. Implement message rendering with support for text, buttons, and interactive elements. Design responsive chat layout with proper scrolling and message history.",
+          "status": "pending"
+        },
+        {
+          "id": 2,
+          "title": "WebSocket Real-time Messaging Implementation",
+          "description": "Implement WebSocket connection for real-time bidirectional communication",
+          "dependencies": [
+            1
+          ],
+          "details": "Set up WebSocket client connection, handle connection states, implement message sending/receiving, manage reconnection logic, and integrate with chat UI for real-time message delivery and typing indicators.",
+          "status": "pending"
+        },
+        {
+          "id": 3,
+          "title": "Frontend State Management for Onboarding",
+          "description": "Implement Redux/Context state management for onboarding flow and chat state",
+          "dependencies": [
+            1
+          ],
+          "details": "Create state slices for chat messages, user responses, onboarding progress, AI conversation context, and user profile data. Implement actions and reducers for managing conversation flow and data persistence.",
+          "status": "pending"
+        },
+        {
+          "id": 4,
+          "title": "AI Service Integration with OpenAI",
+          "description": "Integrate OpenAI API for conversational AI and response generation",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Implement API calls to OpenAI for generating contextual responses, handle streaming responses, manage conversation context, implement error handling and fallback mechanisms, and optimize prompt engineering for onboarding scenarios.",
+          "status": "pending"
+        },
+        {
+          "id": 5,
+          "title": "Business Context Extraction and Structuring",
+          "description": "Extract and structure business information from user conversations",
+          "dependencies": [
+            4
+          ],
+          "details": "Implement natural language processing to extract key business information (company size, industry, goals), structure extracted data into standardized formats, validate and normalize business context, and maintain conversation memory.",
+          "status": "pending"
+        },
+        {
+          "id": 6,
+          "title": "Vector Embedding Generation with Celery",
+          "description": "Implement asynchronous vector embedding generation for conversation context",
+          "dependencies": [
+            5
+          ],
+          "details": "Set up Celery task queue for generating embeddings from conversation data, implement vector generation using OpenAI embeddings API, handle batch processing of conversation chunks, and manage embedding storage and retrieval.",
+          "status": "pending"
+        },
+        {
+          "id": 7,
+          "title": "Context Retrieval with Vector Similarity Search",
+          "description": "Implement vector similarity search for contextual conversation retrieval",
+          "dependencies": [
+            6
+          ],
+          "details": "Build vector similarity search functionality using cosine similarity, implement context retrieval based on current conversation, optimize search performance with indexing, and integrate retrieved context into AI responses.",
+          "status": "pending"
+        },
+        {
+          "id": 8,
+          "title": "Comprehensive Testing Strategy Implementation",
+          "description": "Develop and execute unit, integration, and E2E testing for the onboarding system",
+          "dependencies": [
+            7
+          ],
+          "details": "Create unit tests for React components and utility functions, implement integration tests for WebSocket communication and AI service integration, develop E2E tests for complete onboarding flows, and set up automated testing pipeline with coverage reporting.",
+          "status": "pending"
+        },
+        {
+          "id": 9,
+          "title": "Create User Profile Management",
+          "description": "Implement user profile management functionality including profile creation, updating, and retrieval as part of the workspace onboarding system.",
+          "details": "Migrate the user profile management functionality from the authentication system to the workspace onboarding flow. This will include implementing profile creation during onboarding, profile editing capabilities, and integration with the authentication system.",
+          "status": "pending",
+          "dependencies": [],
+          "parentTaskId": 4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Develop Product and Inventory Management",
+      "description": "Create comprehensive product management system with support for variants, SKU generation, and inventory tracking.",
+      "details": "Build ProductForm.tsx with sections for basic product info, variant management, and inventory items. Create VariantManager.tsx for dynamic variant type and option management. Implement InventoryItemTable.tsx for SKU-specific pricing and stock management. Build ProductTable.tsx with filtering, sorting, and pagination. Create API endpoints: POST/GET/PUT/DELETE /api/v1/products, /api/v1/products/{id}/inventory_items, /api/v1/inventory_items/{id}. Implement SKU auto-generation logic based on product name and variant combinations. Add SKU validation for format and uniqueness within business scope. Create transactional product creation/update logic handling products, variants, and inventory items atomically. Implement stock quantity tracking with non-negative constraints.",
+      "testStrategy": "Unit tests for SKU generation and validation logic. Integration tests for product CRUD operations and transactional integrity. Test variant combination generation and inventory item creation. E2E tests for complete product creation flow with multiple variants.",
+      "priority": "medium",
+      "dependencies": [
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 6,
+      "title": "Implement Social Media Integration Infrastructure",
+      "description": "Build the foundation for social media platform connections including webhook handling, token management, and platform API clients.",
+      "details": "Create social_connections table management with encrypted token storage. Build webhook endpoints for Instagram and WhatsApp with signature verification. Implement OAuth flow for Instagram Graph API integration. Create platform API clients for sending messages via Instagram and WhatsApp Business APIs. Build social connection management UI in /settings/integrations with connection/disconnection flows. Implement webhook verification and routing logic using unique business identifiers. Create secure token storage and refresh mechanisms. Setup webhook URL configuration and platform-specific authentication handling.",
+      "testStrategy": "Unit tests for webhook signature verification and token management. Integration tests for OAuth flows and API client functionality. Test webhook routing and authentication. Mock platform APIs for reliable testing of integration flows.",
+      "priority": "medium",
+      "dependencies": [
+        3
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 7,
+      "title": "Build AI-Powered Conversation Processing",
+      "description": "Develop the core AI service that processes incoming messages, generates responses, and handles escalation logic for customer conversations.",
+      "details": "Create AI service with OpenAI integration for intent recognition, entity extraction, and response generation. Implement message processing Celery tasks that handle webhook ingestion, AI analysis, and response generation. Build context retrieval system that queries product catalog and business embeddings for relevant information. Create confidence scoring and escalation logic based on AI response quality and detected intents. Implement conversation state management and message persistence. Build prompt engineering system with templates for different conversation scenarios. Create AI response logging in ai_responses_log table for debugging and improvement. Implement automatic response sending via platform APIs with retry logic and error handling.",
+      "testStrategy": "Unit tests for AI service methods, intent recognition, and entity extraction. Integration tests for complete message processing pipeline. Test confidence scoring and escalation triggers. Mock OpenAI API for consistent testing of AI logic and response generation.",
+      "priority": "high",
+      "dependencies": [
+        4,
+        5,
+        6
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 8,
+      "title": "Create Conversation Management Dashboard",
+      "description": "Build the user interface for managing customer conversations, viewing chat history, and enabling human takeover from AI.",
+      "details": "Create conversation management pages at /conversations with list and chat views. Build ConversationList.tsx with filtering by status, platform, and search capabilities. Implement ChatInterface.tsx for displaying message history and enabling human responses. Create Message.tsx component with different styling for customer, AI, and human messages. Build real-time updates using WebSocket connections for new messages and status changes. Implement conversation status management (active_ai, escalated_human_needed, active_human, resolved). Create manual message sending functionality for human operators. Add conversation notes and tagging capabilities. Implement notification system for escalated conversations.",
+      "testStrategy": "Unit tests for conversation UI components and state management. Integration tests for WebSocket real-time updates and message sending. Test conversation filtering and search functionality. E2E tests for complete conversation management workflow including human takeover.",
+      "priority": "medium",
+      "dependencies": [
+        7
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 9,
+      "title": "Setup Monitoring and Alerting System",
+      "description": "Integrate comprehensive monitoring, error tracking, and alerting using Sentry, PostHog, and structured logging.",
+      "details": "Configure Sentry SDK for both FastAPI backend and Next.js frontend with error tracking and performance monitoring. Setup PostHog for product analytics and user behavior tracking. Implement structured logging middleware for FastAPI with request/response logging including user context. Create alerting rules for critical issues: high error rates, AI service failures, social media API errors, Celery queue delays. Setup log aggregation and monitoring for AI response quality and escalation rates. Configure notification channels (email, Slack) for critical alerts. Implement performance monitoring for API response times and database query performance. Create dashboards for key metrics: user engagement, AI effectiveness, system health.",
+      "testStrategy": "Test error capture and reporting to Sentry. Verify PostHog event tracking for key user actions. Test alert triggering for simulated error conditions. Validate structured logging format and searchability.",
+      "priority": "medium",
+      "dependencies": [
+        7,
+        8
+      ],
+      "status": "pending",
+      "subtasks": []
+    },
+    {
+      "id": 10,
+      "title": "End-to-End Testing and Production Deployment",
+      "description": "Conduct comprehensive testing, security review, and deploy the complete CHIDI MVP to production environment.",
+      "details": "Create comprehensive E2E test suite covering complete user journeys: signup → onboarding → product management → conversation handling. Implement performance testing for high-volume message processing and concurrent user scenarios. Conduct security review including authentication flows, data validation, and PII handling. Setup production environment on Fly.io with proper scaling configuration. Configure production databases, Redis, and environment variables. Implement backup and disaster recovery procedures. Create deployment pipeline with automated testing and rollback capabilities. Setup production monitoring and alerting thresholds. Conduct user acceptance testing with beta users. Create documentation for system administration and troubleshooting.",
+      "testStrategy": "Execute full E2E test suite in staging environment. Perform load testing with simulated high message volume. Conduct security penetration testing. Verify production deployment and monitoring systems. Test disaster recovery procedures and data backup/restore.",
+      "priority": "high",
+      "dependencies": [
+        8,
+        9
+      ],
+      "status": "pending",
+      "subtasks": []
+    }
+  ]
+}

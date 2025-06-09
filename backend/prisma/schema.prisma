@@ -113,8 +113,23 @@ model BusinessContextChunk {
   sourceField       String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  embedding         BusinessContextEmbedding?
 
   @@index([businessId])
+}
+
+// BusinessContextEmbedding model for vector search
+model BusinessContextEmbedding {
+  id                String           @id @default(uuid())
+  vector            Unsupported("vector(1536)") // OpenAI embeddings dimension
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  chunkId           String           @unique
+  chunk             BusinessContextChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([chunkId])
 }
 
 // SocialConnection model
@@ -161,11 +176,83 @@ model Product {
   id                String           @id @default(uuid())
   name              String
   description       String?
-  price             Float?
+  basePrice         Float
+  sku               String?
+  isActive          Boolean          @default(true)
+  imageUrls         String[]         @default([])
+  category          String?
+  tags              String[]         @default([])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  
+  // Relations
   businessId        String
   business          Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  variants          ProductVariant[]
+  inventoryItems    InventoryItem[]
+
+  @@unique([businessId, sku])
+  @@index([businessId])
+  @@index([category])
+}
+
+// ProductVariant model
+model ProductVariant {
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  productId         String
+  product           Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  options           ProductVariantOption[]
+
+  @@unique([productId, name])
+  @@index([productId])
+}
+
+// ProductVariantOption model
+model ProductVariantOption {
+  id                String           @id @default(uuid())
+  value             String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  variantId         String
+  variant           ProductVariant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  inventoryItems    InventoryItem[]  @relation("InventoryItemToVariantOption")
+
+  @@unique([variantId, value])
+  @@index([variantId])
+}
+
+// InventoryItem model
+model InventoryItem {
+  id                String           @id @default(uuid())
+  sku               String
+  price             Float
+  salePrice         Float?
+  stockQuantity     Int              @default(0)
+  lowStockThreshold Int              @default(5)
+  barcode           String?
+  weight            Float?
+  dimensions        String?
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  productId         String
+  product           Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantOptions    ProductVariantOption[] @relation("InventoryItemToVariantOption")
+
+  @@unique([productId, sku])
+  @@index([productId])
+  @@index([sku])
+  @@index([stockQuantity])
 }
 
 // Conversation model
@@ -238,7 +325,7 @@ model KnowledgeItem {
   title             String
   content           String
   source            String?
-  embedding         Unsupported("vector")?
+  embedding         Unsupported("vector(1536)")? // OpenAI embeddings dimension
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   

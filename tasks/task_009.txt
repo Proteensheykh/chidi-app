@@ -1,0 +1,11 @@
+# Task ID: 9
+# Title: Setup Monitoring and Alerting System
+# Status: pending
+# Dependencies: 7, 8
+# Priority: medium
+# Description: Integrate comprehensive monitoring, error tracking, and alerting using Sentry, PostHog, and structured logging.
+# Details:
+Configure Sentry SDK for both FastAPI backend and Next.js frontend with error tracking and performance monitoring. Setup PostHog for product analytics and user behavior tracking. Implement structured logging middleware for FastAPI with request/response logging including user context. Create alerting rules for critical issues: high error rates, AI service failures, social media API errors, Celery queue delays. Setup log aggregation and monitoring for AI response quality and escalation rates. Configure notification channels (email, Slack) for critical alerts. Implement performance monitoring for API response times and database query performance. Create dashboards for key metrics: user engagement, AI effectiveness, system health.
+
+# Test Strategy:
+Test error capture and reporting to Sentry. Verify PostHog event tracking for key user actions. Test alert triggering for simulated error conditions. Validate structured logging format and searchability.

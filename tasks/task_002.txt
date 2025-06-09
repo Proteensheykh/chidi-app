@@ -1,0 +1,43 @@
+# Task ID: 2
+# Title: Implement User Authentication System
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Build secure authentication using Supabase Auth with email/password and Google OAuth support, including JWT validation middleware and user profile management.
+# Details:
+Configure Supabase Auth with email/password and Google OAuth providers. Create auth pages in Next.js: /login, /signup, /forgot-password, /callback. Implement AuthContext and useAuth hook for global auth state management. Build reusable components: LoginForm.tsx, SignupForm.tsx, OAuthButton.tsx. Setup FastAPI JWT validation middleware using get_current_user dependency. Create public users table with Prisma schema (id, email, full_name, avatar_url, created_at, updated_at) with foreign key to auth.users. Implement API endpoints: GET/PUT /api/v1/users/me. Configure protected routes in Next.js with middleware. Setup auth state persistence and automatic token refresh.
+
+# Test Strategy:
+Unit tests for auth components and JWT validation. Integration tests for auth API endpoints. E2E tests for complete signup/login flows including OAuth. Test protected route access control and session persistence across browser refreshes.
+
+# Subtasks:
+## 1. Set up Authentication Context and State Management [done]
+### Dependencies: None
+### Description: Create a React Context for authentication state management that will handle user sessions, login status, and auth-related functions.
+### Details:
+Implement AuthContext.tsx and AuthProvider component that will wrap the application. Include state for currentUser, loading status, and error handling. Create helper functions for login, logout, signup, and session persistence. Use React's useContext hook to make auth state accessible throughout the app. Start with mock/dummy data before Supabase integration.
+
+## 2. Build Authentication UI Components with shadcn/ui [done]
+### Dependencies: 2.1
+### Description: Create reusable UI components for authentication forms using shadcn/ui and Tailwind CSS.
+### Details:
+Develop form components for login, signup, password reset, and email verification. Implement form validation using a form library compatible with shadcn/ui. Style components according to the design system using Tailwind CSS. Create loading states, error messages, and success notifications for auth operations. Ensure components are accessible and responsive.
+
+## 3. Implement Authentication Pages in Next.js [done]
+### Dependencies: 2.1, 2.2
+### Description: Create the necessary pages for authentication flow in the Next.js application structure.
+### Details:
+Create pages for login, signup, password reset, email verification, and account recovery. Implement protected routes that redirect unauthenticated users. Set up route guards using Next.js middleware. Connect the auth UI components to the AuthContext. Test the flow with mock data before backend integration.
+
+## 4. Configure Supabase Authentication [done]
+### Dependencies: 2.1
+### Description: Set up and configure Supabase authentication services for the application.
+### Details:
+Create a Supabase project and configure auth settings. Enable email/password authentication and any OAuth providers needed. Set up email templates for verification and password reset. Configure security settings like JWT expiration and refresh token rotation. Create API helper functions to interact with Supabase auth from the frontend.
+
+## 5. Integrate Frontend with Supabase Auth [done]
+### Dependencies: 2.3, 2.4
+### Description: Connect the frontend authentication system to the Supabase backend.
+### Details:
+Replace mock data with actual Supabase auth calls in the AuthContext. Implement JWT storage and refresh logic. Handle auth state changes and session persistence. Set up user profile database tables and relationships. Test the complete authentication flow with real backend integration.
+

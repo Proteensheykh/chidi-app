@@ -109,7 +109,7 @@ celerybeat.pid
 render.yaml
 
 # Added by Claude Task Master
-tasks/
+
 
 
 prisma/schema.prisma
