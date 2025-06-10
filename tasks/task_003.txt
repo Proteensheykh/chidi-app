@@ -1,6 +1,6 @@
 # Task ID: 3
 # Title: Create Database Schema and Models
-# Status: pending
+# Status: done
 # Dependencies: 1, 2
 # Priority: high
 # Description: Design and implement the complete database schema using Prisma for all core entities including businesses, products, conversations, and social connections.
@@ -35,7 +35,7 @@ Create schema for conversations and messages tables. Create schema for ai_respon
 ### Details:
 Set up business_context_chunks table. Configure business_context_embeddings table in Supabase Vector. Set up vector(1536) for OpenAI embeddings. Create proper indexes for vector similarity search.
 
-## 5. Generate Database Client and Connection Management [pending]
+## 5. Generate Database Client and Connection Management [done]
 ### Dependencies: None
 ### Description: Create Prisma client configuration, database session management, and run initial migration.
 ### Details:
