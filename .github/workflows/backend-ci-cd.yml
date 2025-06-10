@@ -79,6 +79,9 @@ jobs:
       
       - name: Install Render CLI
         run: pip install render-cli
+
+      - name: Verify Render CLI Installation
+        run: render --version
       
       - name: Deploy to Render
         env:
