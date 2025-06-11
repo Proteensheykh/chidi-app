@@ -8,31 +8,18 @@ import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { OptionButtons, FormInputs, RichTextMessage, ActionCard } from "@/components/messages";
+import { MessageType, OnboardingProgressType } from "@/types/message";
 
-export type MessageType = {
-  id: string;
-  content: string;
-  sender: "user" | "assistant";
-  timestamp: Date;
-  attachments?: Array<{
-    id: string;
-    name: string;
-    url: string;
-    type: string;
-  }>;
-};
-
-export type OnboardingProgressType = {
-  percentage: number;
-  currentStep: number;
-  totalSteps: number;
-  stepTitle: string;
-};
+// Using types from @/types/message.ts
 
 interface ConversationalUIProps {
   messages: MessageType[];
   onSendMessage: (message: string) => void;
   onFileUpload?: (file: File) => void;
+  onOptionSelect?: (option: any) => void;
+  onFormSubmit?: (messageId: string, values: Record<string, any>) => void;
+  onActionCardClick?: (actionType: string) => void;
   isTyping?: boolean;
   isOnboarding?: boolean;
   onboardingProgress?: OnboardingProgressType;
@@ -42,6 +29,9 @@ export function ConversationalUI({
   messages,
   onSendMessage,
   onFileUpload,
+  onOptionSelect,
+  onFormSubmit,
+  onActionCardClick,
   isTyping = false,
   isOnboarding = false,
   onboardingProgress,
@@ -139,14 +129,40 @@ export function ConversationalUI({
                 {message.sender === "user" ? (
                   <div className="bg-fresh-mint text-charcoal p-3 inline-block rounded-2xl min-w-[120px] shadow-sm border border-fresh-mint">
                     <p className="text-sm whitespace-pre-wrap font-medium">
-                      {message.content || "Liz and co"}
+                      {message.content || ""}
                     </p>
                   </div>
                 ) : (
                   <div className="bg-soft-sage text-charcoal p-3 inline-block rounded-2xl min-w-[120px] shadow-sm border border-light-border">
                     <p className="text-sm whitespace-pre-wrap font-medium">
-                      {message.content || "(Empty message)"}
+                      {message.content || ""}
                     </p>
+                    
+                    {/* Interactive elements */}
+                    {message.options && message.options.length > 0 && onOptionSelect && (
+                      <OptionButtons 
+                        options={message.options} 
+                        onOptionSelect={onOptionSelect} 
+                      />
+                    )}
+                    
+                    {message.formInputs && message.formInputs.length > 0 && onFormSubmit && (
+                      <FormInputs 
+                        inputs={message.formInputs} 
+                        onSubmit={(values) => onFormSubmit(message.id, values)} 
+                      />
+                    )}
+                    
+                    {message.richContent && (
+                      <RichTextMessage content={message.richContent} />
+                    )}
+                    
+                    {message.actionCard && onActionCardClick && (
+                      <ActionCard 
+                        card={message.actionCard} 
+                        onAction={onActionCardClick} 
+                      />
+                    )}
                   </div>
                 )}
                 
