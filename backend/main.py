@@ -23,6 +23,16 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",
+    swagger_ui_parameters={
+        "deepLinking": True,  # Enables deep linking to specific operations
+        "persistAuthorization": True,  # Persists authorization data between page refreshes
+        "displayRequestDuration": True,  # Shows how long requests take
+        "defaultModelsExpandDepth": 3,  # Expands models to show properties
+        "defaultModelExpandDepth": 3,  # Expands nested models
+        "tryItOutEnabled": True,  # Enables the "Try it out" feature by default
+        "filter": True,  # Enables filtering operations by tag or text
+        "syntaxHighlight": {"activate": True, "theme": "monokai"}  # Syntax highlighting for JSON
+    }
 )
 
 # Set up CORS middleware
