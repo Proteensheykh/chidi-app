@@ -27,6 +27,9 @@ const config: Config = {
     '/public/',
   ],
   // Ensure timers are available in test environment
+  testEnvironmentOptions: {
+    customExportConditions: [''],
+  },
   fakeTimers: {
     enableGlobally: false,
   },

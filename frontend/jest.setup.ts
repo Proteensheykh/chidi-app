@@ -1,5 +1,14 @@
 import '@testing-library/jest-dom';
 
+// Use Jest's timer implementation
+jest.useFakeTimers();
+
+// Ensure timer functions are available globally
+global.setTimeout = global.setTimeout || jest.fn();
+global.clearTimeout = global.clearTimeout || jest.fn();
+global.setInterval = global.setInterval || jest.fn();
+global.clearInterval = global.clearInterval || jest.fn();
+
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
@@ -8,7 +17,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock Supabase client
-jest.mock('@/lib/supabase/client', () => ({
+jest.mock('@/lib/supabase', () => ({
   createClient: jest.fn(() => ({
     auth: {
       signInWithPassword: jest.fn(),
