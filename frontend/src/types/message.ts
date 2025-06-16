@@ -1,7 +1,7 @@
 export type MessageType = {
   id: string;
   content: string;
-  sender: "user" | "assistant";
+  sender: "user" | "assistant" | "system";
   timestamp: Date;
   messageType?: "text" | "options" | "form" | "richText" | "actionCard";
   attachments?: Array<{

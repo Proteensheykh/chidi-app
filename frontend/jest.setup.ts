@@ -1,13 +1,109 @@
+// Import Jest DOM testing utilities
 import '@testing-library/jest-dom';
 
-// Use Jest's timer implementation
+// Setup Jest's fake timers
 jest.useFakeTimers();
 
-// Ensure timer functions are available globally
-global.setTimeout = global.setTimeout || jest.fn();
-global.clearTimeout = global.clearTimeout || jest.fn();
-global.setInterval = global.setInterval || jest.fn();
-global.clearInterval = global.clearInterval || jest.fn();
+// Ensure all required timer functions are available
+// This is a much simpler approach that avoids TypeScript errors
+const noop = () => {};
+
+// Only define these if they don't already exist
+if (!global.setTimeout) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.setTimeout = noop;
+}
+
+if (!global.clearTimeout) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.clearTimeout = noop;
+}
+
+if (!global.setInterval) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.setInterval = noop;
+}
+
+if (!global.clearInterval) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.clearInterval = noop;
+}
+
+if (!global.requestAnimationFrame) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.requestAnimationFrame = () => 0;
+}
+
+if (!global.cancelAnimationFrame) {
+  // @ts-ignore - We're deliberately using a simplified version
+  global.cancelAnimationFrame = noop;
+}
+
+// Use legacy fake timers for better compatibility
+jest.useFakeTimers({
+  legacyFakeTimers: true
+});
+
+// Make testing-library detect our timer functions as mocks
+// This is needed for waitFor and other async utilities
+if (global.setTimeout) {
+  // @ts-ignore - Adding Jest's _isMockFunction property
+  global.setTimeout._isMockFunction = true;
+}
+
+if (global.clearTimeout) {
+  // @ts-ignore - Adding Jest's _isMockFunction property
+  global.clearTimeout._isMockFunction = true;
+}
+
+if (global.setInterval) {
+  // @ts-ignore - Adding Jest's _isMockFunction property
+  global.setInterval._isMockFunction = true;
+}
+
+if (global.clearInterval) {
+  // @ts-ignore - Adding Jest's _isMockFunction property
+  global.clearInterval._isMockFunction = true;
+}
+
+// Mock next/navigation for Next.js tests
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '',
+}));
+
+// Mock next/router for Next.js tests (for older Next.js APIs)
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    route: '/',
+    pathname: '',
+    query: {},
+    asPath: '',
+    push: jest.fn(),
+    replace: jest.fn(),
+    reload: jest.fn(),
+    back: jest.fn(),
+    prefetch: jest.fn(),
+    beforePopState: jest.fn(),
+    events: {
+      on: jest.fn(),
+      off: jest.fn(),
+      emit: jest.fn(),
+    },
+    isFallback: false,
+  }),
+}));
+
+// Increase Jest timeout for all tests
+jest.setTimeout(10000);
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({

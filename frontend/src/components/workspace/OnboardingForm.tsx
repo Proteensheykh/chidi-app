@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ConversationalUI, MessageType, OnboardingProgressType } from "./ConversationalUI";
+import { useState, useEffect, useRef } from "react";
+import { ConversationalUI } from "./ConversationalUI";
+import { MessageType, OnboardingProgressType } from "@/types/message";
 import { Card } from "@/components/ui/card";
+import { WebSocketService, WebSocketEvent } from "@/services/websocket";
+import { useAuth } from "@/contexts/auth-context";
 
 // Define the onboarding steps
 const ONBOARDING_STEPS = [
@@ -45,12 +48,145 @@ export function OnboardingForm({ onComplete, initialBusinessData = {} }: Onboard
     totalSteps: ONBOARDING_STEPS.length,
     stepTitle: ONBOARDING_STEPS[0].title
   });
+  
+  const { session } = useAuth();
+  const websocketRef = useRef<WebSocketService | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [fallbackMode, setFallbackMode] = useState(false);
 
-  // Function to simulate AI responses based on user input and current step
-  const generateAIResponse = async (userMessage: string): Promise<string> => {
-    // In a real implementation, this would call the backend API
-    // For now, we'll simulate responses based on the current step
+  // Initialize WebSocket when component mounts
+  useEffect(() => {
+    // Track if component is mounted to prevent state updates after unmount
+    let isMounted = true;
     
+    const initializeWebSocket = () => {
+      try {
+        // Check if we have a valid session with a token
+        if (!session || !session.access_token) {
+          console.warn("No authenticated session found - enabling fallback mode");
+          if (isMounted) {
+            setConnectionError("No authenticated session found");
+            setFallbackMode(true);
+          }
+          return;
+        }
+        
+        // For development, use the dev token that bypasses backend auth
+        // In production, this would be removed and only the real token would be used
+        const isDev = process.env.NODE_ENV === "development";
+        const wsToken = isDev ? "dev-token-123" : session.access_token;
+        
+        console.log(`Using ${isDev ? "development" : "production"} token for WebSocket`);
+        
+        // Prevent multiple WebSocket connections
+        if (websocketRef.current) {
+          console.log("WebSocket already initialized, skipping");
+          return;
+        }
+        
+        // Create WebSocket service with auth token
+        const ws = new WebSocketService(wsToken);
+        websocketRef.current = ws;
+        
+        // Add event listener
+        const removeListener = ws.addListener(handleWebSocketEvent);
+        
+        // Connect to WebSocket
+        ws.connect();
+        
+        // Set a timeout to enable fallback mode if connection fails
+        const connectionTimeout = setTimeout(() => {
+          if (isMounted && !isConnected) {
+            console.warn("WebSocket connection timeout - enabling fallback mode");
+            setConnectionError("Connection timeout - using local responses");
+            setFallbackMode(true);
+          }
+        }, 5000);
+        
+        // Clean up WebSocket connection when component unmounts
+        return () => {
+          isMounted = false;
+          clearTimeout(connectionTimeout);
+          removeListener();
+          websocketRef.current?.disconnect();
+          websocketRef.current = null;
+        };
+      } catch (error) {
+        console.error("Error initializing WebSocket:", error);
+        if (isMounted) {
+          setConnectionError("Failed to connect to the server");
+          setFallbackMode(true);
+        }
+      }
+    };
+    
+    initializeWebSocket();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [session]); // Remove isConnected from dependencies to prevent reconnection loops
+  
+  // Handle WebSocket events
+  const handleWebSocketEvent = (event: WebSocketEvent) => {
+    switch (event.type) {
+      case 'connected':
+        setIsConnected(true);
+        setConnectionError(null);
+        break;
+        
+      case 'disconnected':
+        setIsConnected(false);
+        break;
+        
+      case 'message':
+        if (event.message) {
+          const newMessage: MessageType = {
+            id: event.message.id || `assistant-${Date.now()}`,
+            content: event.message.content,
+            sender: event.message.sender,
+            timestamp: event.message.timestamp ? new Date(event.message.timestamp) : new Date()
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
+        }
+        break;
+        
+      case 'typing_indicator':
+        setIsTyping(!!event.isTyping);
+        break;
+        
+      case 'onboarding_state':
+        if (event.onboardingState) {
+          // Update business data
+          setBusinessData(event.onboardingState.businessData || {});
+          
+          // Update step if available in the state
+          const currentStepNumber = event.onboardingState.currentStep || currentStep;
+          setCurrentStep(currentStepNumber);
+          
+          // Update progress
+          const percentage = ((currentStepNumber - 1) / (ONBOARDING_STEPS.length - 1)) * 100;
+          setProgress({
+            percentage,
+            currentStep: currentStepNumber,
+            totalSteps: ONBOARDING_STEPS.length,
+            stepTitle: ONBOARDING_STEPS[currentStepNumber - 1]?.title || ""
+          });
+        }
+        break;
+        
+      case 'error':
+        console.error("WebSocket error:", event.error);
+        setConnectionError(event.error || "An unknown error occurred");
+        break;
+    }
+  };
+  
+  // Function to simulate AI responses (fallback when WebSocket is unavailable)
+  const generateAIResponse = async (userMessage: string): Promise<string> => {
+    // Only used when WebSocket connection fails
     setIsTyping(true);
     
     // Simulate network delay
@@ -192,28 +328,32 @@ export function OnboardingForm({ onComplete, initialBusinessData = {} }: Onboard
     
     setMessages((prev: MessageType[]) => [...prev, userMessage]);
     
-    // Generate AI response
-    const aiResponse = await generateAIResponse(content);
-    
-    // Add AI response to the chat
-    const assistantMessage: MessageType = {
-      id: `assistant-${Date.now()}`,
-      content: aiResponse,
-      sender: "assistant",
-      timestamp: new Date()
-    };
-    
-    setMessages((prev: MessageType[]) => [...prev, assistantMessage]);
+    // Check if we're in fallback mode (no WebSocket connection)
+    if (fallbackMode || !isConnected || !websocketRef.current) {
+      // Use fallback local response generation
+      const aiResponse = await generateAIResponse(content.trim());
+      
+      // Add AI response to the chat
+      const assistantMessage: MessageType = {
+        id: `assistant-${Date.now()}`,
+        content: aiResponse,
+        sender: "assistant",
+        timestamp: new Date()
+      };
+      
+      setMessages((prev: MessageType[]) => [...prev, assistantMessage]);
+    } else {
+      // Send message via WebSocket
+      websocketRef.current.sendMessage(content.trim());
+      // Response will come through the WebSocket event handler
+    }
   };
 
-  // Handle file upload (placeholder for future implementation)
+  // Handle file upload
   const handleFileUpload = async (file: File) => {
     console.log("File uploaded:", file.name);
     
-    // In a real implementation, this would upload the file to a server
-    // and possibly extract information from it
-    
-    // For now, just add a message acknowledging the upload
+    // Create a message with the file attachment
     const userMessage: MessageType = {
       id: `file-${Date.now()}`,
       content: `Uploaded file: ${file.name}`,
@@ -231,21 +371,50 @@ export function OnboardingForm({ onComplete, initialBusinessData = {} }: Onboard
     
     setMessages((prev: MessageType[]) => [...prev, userMessage]);
     
-    // Generate AI response acknowledging the file
-    const aiResponse = "Thanks for sharing that file. I'll analyze it and incorporate the information.";
-    
-    const assistantMessage: MessageType = {
-      id: `assistant-${Date.now()}`,
-      content: aiResponse,
-      sender: "assistant",
-      timestamp: new Date()
-    };
-    
-    setMessages((prev: MessageType[]) => [...prev, assistantMessage]);
+    if (fallbackMode || !isConnected || !websocketRef.current) {
+      // Generate fallback AI response acknowledging the file
+      const aiResponse = "Thanks for sharing that file. I'll analyze it and incorporate the information.";
+      
+      const assistantMessage: MessageType = {
+        id: `assistant-${Date.now()}`,
+        content: aiResponse,
+        sender: "assistant",
+        timestamp: new Date()
+      };
+      
+      setMessages((prev: MessageType[]) => [...prev, assistantMessage]);
+    } else {
+      // In a real implementation, we would upload the file to a server
+      // For now, we'll just trigger an action to notify the backend about the file
+      websocketRef.current.sendActionTrigger('file_upload', {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      });
+      // Response will come through the WebSocket event handler
+    }
   };
+
+  // Display connection status or error
+  useEffect(() => {
+    if (connectionError) {
+      console.warn("Connection Status:", connectionError);
+    }
+  }, [connectionError]);
 
   return (
     <Card className="flex flex-col h-full overflow-hidden border-light-border">
+      {connectionError && (
+        <div className="p-2 bg-red-50 text-red-800 text-sm">
+          <p>Connection error: {connectionError}</p>
+          <p>Using fallback local responses.</p>
+        </div>
+      )}
+      {isConnected && (
+        <div className="p-2 bg-green-50 text-green-800 text-sm">
+          <p>Connected to backend WebSocket server</p>
+        </div>
+      )}
       <ConversationalUI
         messages={messages}
         onSendMessage={handleSendMessage}

@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from typing import Any, List, Dict, Optional
 import json
 import logging
-import asyncio
 from datetime import datetime
 import uuid
 
@@ -11,12 +10,16 @@ from app.schemas.user import User
 from app.schemas.onboarding import OnboardingMessage, OnboardingState, WebSocketMessage, MessageType
 from app.services.websocket import manager
 from app.services.ai_service import generate_onboarding_response
+from app.core.json import json_dumps
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # In-memory storage for onboarding state (would be replaced with database in production)
 onboarding_states: Dict[str, OnboardingState] = {}
+
+# Track users who have already received welcome messages
+welcome_message_sent: Dict[str, bool] = {}
 
 
 @router.websocket("/ws")
@@ -33,16 +36,22 @@ async def onboarding_websocket(
         token: The Supabase JWT token for authentication
         conversation_id: Optional ID of the conversation to join
     """
-    # Verify the token and get user data
-    user_data = await verify_supabase_token(token)
-    if not user_data:
-        await websocket.close(code=1008, reason="Invalid authentication token")
-        return
-    
-    user_id = user_data.get("id")
-    if not user_id:
-        await websocket.close(code=1008, reason="User ID not found in token")
-        return
+    # Development bypass for authentication
+    # In production, this would be removed and only proper JWT verification would be used
+    if token == "dev-token-123":
+        logger.warning("Using development token bypass for WebSocket authentication")
+        user_id = "dev-user-123"
+    else:
+        # Verify the token and get user data
+        user_data = await verify_supabase_token(token)
+        if not user_data:
+            await websocket.close(code=1008, reason="Invalid authentication token")
+            return
+        
+        user_id = user_data.get("id")
+        if not user_id:
+            await websocket.close(code=1008, reason="User ID not found in token")
+            return
     
     # Initialize or get onboarding state
     if user_id not in onboarding_states:
@@ -51,19 +60,32 @@ async def onboarding_websocket(
     # Connect the WebSocket client
     connection_id = await manager.connect(websocket, user_id, conversation_id)
     
-    # Send welcome message and onboarding state
-    welcome_message = OnboardingMessage(
-        id=str(uuid.uuid4()),
-        content="Welcome to CHIDI App onboarding! I'll help you set up your workspace.",
-        sender="assistant",
-        messageType="text"
-    )
+    # Check if this is the first connection for this user
+    is_first_connection = user_id not in welcome_message_sent or not welcome_message_sent[user_id]
     
-    # Add welcome message to conversation history
-    onboarding_states[user_id].conversationHistory.append(welcome_message)
-    
-    # Send welcome message
-    await manager.send_personal_message(welcome_message.dict(), connection_id)
+    # Only send welcome message on first connection
+    if is_first_connection:
+        # Create welcome message
+        welcome_message = OnboardingMessage(
+            id=str(uuid.uuid4()),
+            content="Welcome to CHIDI App onboarding! I'll help you set up your workspace.",
+            sender="assistant",
+            messageType="text"
+        )
+        
+        # Add welcome message to conversation history
+        onboarding_states[user_id].conversationHistory.append(welcome_message)
+        
+        # Send welcome message
+        await manager.send_personal_message(welcome_message.dict(), connection_id)
+        
+        # Mark welcome message as sent for this user
+        welcome_message_sent[user_id] = True
+        
+        logger.info(f"Sent welcome message to user {user_id}")
+    else:
+        logger.info(f"Skipping welcome message for user {user_id} (already sent)")
+
     
     # Send onboarding state
     await manager.send_personal_message({

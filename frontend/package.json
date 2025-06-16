@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "test": "jest",
+    "test": "jest --verbose --no-cache",
     "test:watch": "jest --watch"
   },
   "dependencies": {

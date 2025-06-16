@@ -86,13 +86,16 @@ class ConnectionManager:
             message: The message to send
             connection_id: The connection ID to send to
         """
+        from app.core.json import json_dumps
+        
         if connection_id not in self.active_connections:
             logger.warning(f"Attempted to send message to non-existent connection: {connection_id}")
             return
         
         websocket = self.active_connections[connection_id]
         if isinstance(message, dict) or isinstance(message, list):
-            await websocket.send_json(message)
+            # Use custom JSON serialization for datetime objects
+            await websocket.send_text(json_dumps(message))
         else:
             await websocket.send_text(str(message))
     

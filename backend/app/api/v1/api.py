@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import users, auth, businesses, conversations, workspace, onboarding, business_context
+from app.api.v1.endpoints import users, auth, businesses, conversations, workspace, onboarding, business_context, sidebar
 
 api_router = APIRouter()
 
@@ -12,3 +12,4 @@ api_router.include_router(conversations.router, prefix="/conversations", tags=["
 api_router.include_router(workspace.router, prefix="/workspace", tags=["Workspace"])
 api_router.include_router(onboarding.router, prefix="/onboarding", tags=["Onboarding"])
 api_router.include_router(business_context.router, prefix="/business-context", tags=["Business Context"])
+api_router.include_router(sidebar.router, prefix="/sidebar", tags=["Sidebar"])
