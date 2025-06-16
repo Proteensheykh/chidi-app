@@ -118,10 +118,13 @@ export function ConversationalUI({
             >
               <Avatar className={cn(
                 "h-8 w-8 flex items-center justify-center",
-                message.sender === "assistant" ? "bg-chidi-forest text-pure-white" : "bg-fresh-mint text-charcoal border border-white shadow-sm"
+                message.sender === "assistant" ? "bg-chidi-forest text-pure-white" : 
+                message.sender === "system" ? "bg-slate-500 text-pure-white" : 
+                "bg-fresh-mint text-charcoal border border-white shadow-sm"
               )}>
                 <span className="text-xs font-bold">
-                  {message.sender === "assistant" ? "AI" : "You"}
+                  {message.sender === "assistant" ? "AI" : 
+                   message.sender === "system" ? "SYS" : "You"}
                 </span>
               </Avatar>
               
@@ -129,6 +132,12 @@ export function ConversationalUI({
                 {message.sender === "user" ? (
                   <div className="bg-fresh-mint text-charcoal p-3 inline-block rounded-2xl min-w-[120px] shadow-sm border border-fresh-mint">
                     <p className="text-sm whitespace-pre-wrap font-medium">
+                      {message.content || ""}
+                    </p>
+                  </div>
+                ) : message.sender === "system" ? (
+                  <div className="bg-slate-100 text-slate-700 p-3 inline-block rounded-2xl min-w-[120px] shadow-sm border border-slate-200 italic">
+                    <p className="text-sm whitespace-pre-wrap">
                       {message.content || ""}
                     </p>
                   </div>
